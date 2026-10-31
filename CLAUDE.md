@@ -15,7 +15,7 @@ Build a local-first, zero-paid-API AI film production application. The user supp
 - Validate file paths and never allow a project to write outside its workspace.
 
 ## Coding approach
-1. Read README.md and docs/ARCHITECTURE.md and docs/ROADMAP.md before implementation.
+1. Read `docs/STATE.md` first — it records what is done, what is verified, what is still unproven and the agreed next actions. Then read README.md and docs/ARCHITECTURE.md and docs/ROADMAP.md before implementation.
 2. Work in small phases. Before each phase, state the files to change and acceptance tests.
 3. Implement one complete vertical slice at a time. Add tests for parsing, schema validation, project persistence, job lifecycle and rendering.
 4. Keep provider/model operations behind adapters (LLM, image, video, TTS, music/SFX, render).

@@ -119,4 +119,4 @@ Each job is saved as `jobs/<job-id>.json` with its own log, outside `project.jso
 
 ## Next milestones
 
-Follow `docs/ROADMAP.md`. The HTTP API is listed in `docs/API.md`. Keep generation backends replaceable, save every prompt/seed/model/version, and require human approval at important creative checkpoints.
+Current status, what is verified and the agreed next steps are in `docs/STATE.md` — read that first. Follow `docs/ROADMAP.md` for the plan. The HTTP API is listed in `docs/API.md`. Keep generation backends replaceable, save every prompt/seed/model/version, and require human approval at important creative checkpoints.
