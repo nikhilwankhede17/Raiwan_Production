@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hardware &amp; Models — AI Film House</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101114; --panel:#191b20; --panel2:#20232a; --line:#343741; --text:#f2f3f5; --muted:#a4a9b4; --accent:#d9e2ff; --good:#a8e6c1; --warn:#ffd591; --bad:#ffadad; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--text); }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#101114f2; z-index:2; flex-wrap:wrap; }
+    .brand { font-weight:750; letter-spacing:.03em; } .brand span { color:var(--muted); font-weight:400; }
+    main { max-width:1300px; margin:auto; padding:20px; }
+    h1 { margin:0 0 6px; font-size:22px; } h2 { margin:0 0 10px; font-size:16px; } h3 { margin:0 0 4px; font-size:14px; }
+    p { color:var(--muted); margin:0 0 12px; }
+    a { color:var(--accent); } a:focus-visible, button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    button,.button { border:1px solid #56617a; background:#d9e2ff; color:#131723; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; text-decoration:none; font-size:13px; display:inline-block; }
+    .button.secondary { background:var(--panel2); color:var(--text); border-color:var(--line); }
+    button:disabled { opacity:.5; cursor:wait; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:12px; margin-bottom:20px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; min-width:0; }
+    dl { display:grid; grid-template-columns:auto 1fr; gap:3px 12px; margin:0; font-size:13px; }
+    dt { color:var(--muted); } dd { margin:0; overflow-wrap:anywhere; }
+    .state { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+    .ok { color:var(--good); } .no { color:var(--bad); } .unk { color:var(--warn); }
+    .note { color:var(--muted); font-size:12px; margin-top:8px; }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:99px; padding:1px 8px; font-size:11px; color:var(--muted); margin:0 4px 4px 0; }
+    .pill.recommended { color:var(--good); border-color:#3d6b52; } .pill.possible { color:var(--warn); border-color:#6b5a3a; }
+    .pill.not_compatible { color:var(--bad); border-color:#6b3434; } .pill.unknown { color:var(--warn); }
+    .rec { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; }
+    .rec .links a { margin-right:12px; font-size:13px; }
+    code { background:#111318; border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-size:12px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; } th { color:var(--muted); font-weight:600; }
+    .banner { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13px; color:var(--muted); margin-bottom:16px; }
+    .error { color:var(--bad); }
+    details summary { cursor:pointer; color:var(--muted); margin:6px 0; }
+    @media(max-width:700px){ main{padding:12px} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">AI FILM HOUSE <span>/ hardware &amp; models</span></div>
+  <div><a class="button secondary" href="/">← Back to projects</a> <button id="refresh">Re-run checks</button></div>
+</header>
+<main>
+  <h1>Hardware &amp; Models diagnostic</h1>
+  <p>Read-only checks of this computer and of local services. Nothing is downloaded or installed, and nothing leaves this machine; only localhost ComfyUI/Ollama addresses are contacted.</p>
+  <div id="status" class="banner" role="status" aria-live="polite">Running checks…</div>
+  <section aria-labelledby="sys-h"><h2 id="sys-h">This computer</h2><div class="grid" id="system"></div></section>
+  <section aria-labelledby="svc-h"><h2 id="svc-h">Tools &amp; local services</h2><div class="grid" id="services"></div></section>
+  <section aria-labelledby="rec-h">
+    <h2 id="rec-h">Suggested model candidates</h2>
+    <p id="rec-note"></p>
+    <div class="grid" id="recs"></div>
+    <details><summary>Other candidates considered and why they were not picked</summary><div id="others"></div></details>
+  </section>
+</main>
+<script>
+const el = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const unk = '<span class="unk">unknown</span>';
+const val = (v, suffix='') => (v === null || v === undefined || v === '' || v === 'unknown') ? unk : esc(v) + suffix;
+const state = (ok, okText='available', noText='not found') => ok === true ? `<span class="state ok">${okText}</span>` : ok === false ? `<span class="state no">${noText}</span>` : '<span class="state unk">unknown</span>';
+const safeUrl = (u) => /^https:\/\//.test(u || '') ? esc(u) : '#';
+const card = (title, badge, rows, notes=[]) => `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><h3>${title}</h3>${badge||''}</div>
+  <dl>${rows.map(([k,v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl>${notes.filter(Boolean).map(n => `<div class="note">${esc(n)}</div>`).join('')}</div>`;
+
+function render(r) {
+  const gpu = r.gpu || {}, ram = r.ram || {}, disk = r.disk || {}, os = r.os || {}, py = r.python || {}, cpu = r.cpu || {};
+  const gpuRows = (gpu.devices || []).length ? gpu.devices.map(g => [g.name, `${val(g.vram_gb, ' GB')} VRAM · ${esc(g.vendor)}${g.integrated ? ' · integrated' : ''}<br><span class="note">via ${esc(g.source)}${g.driver ? ' · driver ' + esc(g.driver) : ''}${g.vram_note ? ' · ' + esc(g.vram_note) : ''}</span>`]) : [['GPU', unk]];
+  el('system').innerHTML = [
+    card('Operating system', '', [['System', val(os.system)], ['Release', val(os.release)], ['Edition', val(os.edition)], ['Build', val(os.version)], ['Architecture', val(os.machine)]], [os.error]),
+    card('Python', '', [['Version', val(py.version)], ['Implementation', val(py.implementation)], ['Bits', val(py.bits)], ['Executable', val(py.executable)]], [py.note, py.error]),
+    card('CPU &amp; memory', '', [['CPU', val(cpu.name)], ['Logical cores', val(cpu.logical_cores)], ['RAM total', val(ram.total_gb, ' GB')], ['RAM available', val(ram.available_gb, ' GB')], ['Detected via', val(ram.source)]], [ram.note, ram.error]),
+    card('Workspace disk', '', [['Free', val(disk.free_gb, ' GB')], ['Total', val(disk.total_gb, ' GB')], ['Used', val(disk.used_percent, '%')], ['Path', val(disk.path)]], [disk.error]),
+    card('GPU', gpu.compute === 'none' ? '<span class="state no">no usable GPU</span>' : gpu.best_vram_gb ? `<span class="state ok">${esc(gpu.compute || 'gpu')}</span>` : '<span class="state unk">unknown</span>',
+      [...gpuRows, ['Best for generation', gpu.best_device ? `${esc(gpu.best_device)} (${esc(gpu.best_vram_gb)} GB)` : unk]], [...(gpu.notes || []), gpu.error]),
+  ].join('');
+
+  const ff = r.ffmpeg || {}, fm = ff.ffmpeg || {}, fp = ff.ffprobe || {};
+  const comfy = r.comfyui || {}, oll = r.ollama || {};
+  const comfyFiles = [...(comfy.checkpoints || []), ...(comfy.diffusion_models || [])];
+  el('services').innerHTML = [
+    card('FFmpeg', state(ff.available), [['ffmpeg', fm.available ? esc(fm.version) : unk], ['ffprobe', fp.available ? esc(fp.version) : unk], ['Build licence', val(fm.build_license)], ['Path', val(fm.path)]],
+      [ff.hint, ff.error, fm.nonfree ? 'This build includes non-free components and may not be redistributable.' : null]) +
+      `<div class="note"><a href="${safeUrl(ff.license_info)}" target="_blank" rel="noopener noreferrer">FFmpeg licensing</a></div>`,
+    card('ComfyUI', state(comfy.available, 'connected', 'not connected'), [['URL', val(comfy.url)], ['Version', val(comfy.version)], ['PyTorch', val(comfy.pytorch_version)],
+      ['Devices', (comfy.devices || []).length ? comfy.devices.map(d => `${esc(d.name)} (${val(d.vram_total_gb, ' GB')})`).join('<br>') : unk],
+      ['Model files', comfy.available ? (comfyFiles.length ? esc(comfyFiles.slice(0, 8).join(', ')) + (comfyFiles.length > 8 ? ` +${comfyFiles.length - 8} more` : '') : 'none listed') : unk]], [comfy.note, comfy.error]),
+    card('Ollama', state(oll.available, 'connected', 'not connected'), [['URL', val(oll.url)], ['Version', val(oll.version)],
+      ['Local models', (oll.models || []).length ? oll.models.map(m => `${esc(m.name)} <span class="note">${val(m.size_gb, ' GB')}${m.parameter_size ? ' · ' + esc(m.parameter_size) : ''}${m.quantization ? ' · ' + esc(m.quantization) : ''}</span>`).join('<br>') : (oll.available ? 'none' : unk)]], [oll.note, oll.error]),
+  ].join('');
+
+  const rec = r.recommendations || {recommended: [], other_candidates: []};
+  el('rec-note').textContent = `${rec.disclaimer || ''} Catalogue checked ${rec.catalog_checked || 'unknown'}.`;
+  const recCard = (m) => `<div class="rec"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h3>${esc(m.name)}</h3><span><span class="pill">${esc(m.category_label)}</span><span class="pill ${esc(m.status)}">${esc(m.status.replace('_',' '))}</span>${m.installed ? '<span class="pill recommended">already installed</span>' : ''}</span></div>
+    <p style="margin:4px 0 8px">${esc(m.purpose)}</p>
+    <dl><dt>Why</dt><dd>${esc(m.reason)}</dd><dt>Runtime</dt><dd>${esc(m.runtime)}</dd>
+      <dt>Needs</dt><dd>${m.min_vram_gb ? esc(m.min_vram_gb) + ' GB+ VRAM, ' : 'CPU OK, '}${esc(m.min_ram_gb)} GB RAM, ~${esc(m.disk_gb)} GB disk</dd>
+      <dt>Licence</dt><dd>${esc(m.license)}<br><span class="note">${esc(m.commercial_use)}</span></dd>
+      <dt>Install (manual)</dt><dd><code>${esc(m.install_hint)}</code></dd></dl>
+    ${m.notes ? `<div class="note">${esc(m.notes)}</div>` : ''}
+    <div class="links" style="margin-top:8px"><a href="${safeUrl(m.model_card)}" target="_blank" rel="noopener noreferrer">Official model card</a><a href="${safeUrl(m.license_url)}" target="_blank" rel="noopener noreferrer">Licence</a>${m.runtime_page ? `<a href="${safeUrl(m.runtime_page)}" target="_blank" rel="noopener noreferrer">Runtime</a>` : ''}</div></div>`;
+  el('recs').innerHTML = rec.recommended.length ? rec.recommended.map(recCard).join('') : '<div class="card">No candidate fits the detected hardware. You can still use all planning features.</div>';
+  el('others').innerHTML = `<table><thead><tr><th scope="col">Model</th><th scope="col">Use</th><th scope="col">Status</th><th scope="col">Reason</th><th scope="col">Links</th></tr></thead><tbody>${rec.other_candidates.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.category_label)}</td><td><span class="pill ${esc(m.status)}">${esc(m.status.replace('_',' '))}</span></td><td>${esc(m.reason)}</td><td><a href="${safeUrl(m.model_card)}" target="_blank" rel="noopener noreferrer">card</a> · <a href="${safeUrl(m.license_url)}" target="_blank" rel="noopener noreferrer">licence</a></td></tr>`).join('')}</tbody></table>`;
+  el('status').textContent = `Checked ${new Date().toLocaleTimeString()} in ${r.elapsed_ms ?? '?'} ms${r.cached ? ' (cached result; click Re-run checks to refresh)' : ''}. ${r.privacy || ''}`;
+}
+
+async function load(refresh=false) {
+  el('refresh').disabled = true;
+  el('status').textContent = 'Running checks…';
+  try {
+    const res = await fetch('/api/diagnostics' + (refresh ? '?refresh=true' : ''));
+    if (!res.ok) throw new Error(`Diagnostics failed (${res.status})`);
+    render(await res.json());
+  } catch (e) { el('status').innerHTML = `<span class="error">${esc(e.message)}</span> Is the local server running?`; }
+  finally { el('refresh').disabled = false; }
+}
+el('refresh').addEventListener('click', () => load(true));
+load();
+</script>
+</body>
+</html>

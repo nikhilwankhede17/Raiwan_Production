@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Studio — Characters, Locations, Props &amp; References</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101114; --panel:#191b20; --panel2:#20232a; --line:#343741; --text:#f2f3f5; --muted:#a4a9b4; --accent:#d9e2ff; --good:#a8e6c1; --warn:#ffd591; --bad:#ffadad; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--text); }
+    header { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:14px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#101114f2; z-index:4; flex-wrap:wrap; }
+    .brand { font-weight:750; letter-spacing:.03em; } .brand span { color:var(--muted); font-weight:400; }
+    main { max-width:1560px; margin:auto; padding:18px; }
+    h1 { margin:0 0 6px; font-size:21px; } h2 { margin:0 0 10px; font-size:17px; } h3 { margin:0 0 6px; font-size:14px; }
+    p { color:var(--muted); margin:0 0 12px; } label { display:block; font-size:12px; color:var(--muted); margin:9px 0 4px; }
+    a { color:var(--accent); }
+    input,textarea,select { width:100%; border:1px solid var(--line); background:#111318; color:var(--text); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; }
+    input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+    textarea { min-height:56px; resize:vertical; }
+    button,.button { border:1px solid #56617a; background:#d9e2ff; color:#131723; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; text-decoration:none; font-size:13px; display:inline-block; }
+    button.secondary,.button.secondary { background:var(--panel2); color:var(--text); border-color:var(--line); }
+    button.danger { background:#3a1f1f; color:var(--bad); border-color:#6b3434; }
+    button.small { padding:4px 9px; font-size:12px; font-weight:600; }
+    button:disabled { opacity:.45; cursor:not-allowed; }
+    .row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; } .row > * { flex:1; min-width:120px; } .row > .auto { flex:0 0 auto; min-width:0; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px; }
+    .card { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px; }
+    .stack { display:grid; gap:12px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:12px; }
+    .meta { color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:99px; padding:1px 8px; font-size:11px; color:var(--muted); margin:0 4px 3px 0; }
+    .pill.draft { color:var(--warn); border-color:#6b5a3a; } .pill.approved { color:var(--good); border-color:#3d6b52; }
+    .pill.rejected { color:var(--bad); border-color:#6b3434; } .pill.canonical { color:#131723; background:var(--accent); border-color:var(--accent); font-weight:700; }
+    .tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:14px; flex-wrap:wrap; }
+    .tabs button { background:none; border:none; border-bottom:2px solid transparent; color:var(--muted); border-radius:0; padding:8px 13px; font-weight:600; }
+    .tabs button[aria-selected="true"] { color:var(--text); border-bottom-color:var(--accent); }
+    .empty { border:1px dashed var(--line); padding:22px; border-radius:10px; text-align:center; color:var(--muted); }
+    .thumbs { display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:8px; margin-top:8px; }
+    .thumb { border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#0b0c0f; position:relative; }
+    .thumb.is-canonical { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+    .thumb img { width:100%; height:92px; object-fit:cover; display:block; cursor:zoom-in; }
+    .thumb .cap { padding:4px 6px; font-size:11px; color:var(--muted); }
+    .thumb .missing { height:92px; display:flex; align-items:center; justify-content:center; color:var(--bad); font-size:11px; text-align:center; padding:6px; }
+    .msg { font-size:13px; margin-top:8px; white-space:pre-wrap; } .msg.bad { color:var(--bad); } .msg.ok { color:var(--good); }
+    .banner { border:1px solid var(--line); background:var(--panel2); border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:12px; }
+    dialog { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:12px; max-width:900px; width:94%; padding:0; }
+    dialog::backdrop { background:#000a; } .dlg-body { padding:16px; max-height:82vh; overflow:auto; }
+    dialog img.full { max-width:100%; border-radius:8px; border:1px solid var(--line); }
+    .kv { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; font-size:12px; } .kv dt { color:var(--muted); }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+    @media(max-width:900px){ main{padding:12px} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">AI FILM HOUSE <span>/ studio</span></div>
+  <div class="row" style="flex:1;max-width:460px;align-items:center">
+    <label for="project-picker" class="sr-only">Project</label>
+    <select id="project-picker"><option value="">Choose a project…</option></select>
+  </div>
+  <div>
+    <a class="button secondary" href="/">← Projects</a>
+    <a class="button secondary" href="/images">Images</a>
+    <span class="meta" id="rev"></span>
+  </div>
+</header>
+<main>
+  <h1>Character, location and prop studio</h1>
+  <p>Everything here stays on this computer. Imported images are copied into the project, hashed and kept
+    read-only. A reference must be <b>approved</b> before it can become canonical or be used by a scene.</p>
+  <div id="counts" class="banner">Choose a project to begin.</div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="characters" aria-selected="true">Characters</button>
+    <button role="tab" data-tab="locations" aria-selected="false">Locations</button>
+    <button role="tab" data-tab="props" aria-selected="false">Props</button>
+    <button role="tab" data-tab="references" aria-selected="false">References</button>
+    <button role="tab" data-tab="scenes" aria-selected="false">Scenes</button>
+  </div>
+  <div id="body"><div class="empty">Choose a project to begin.</div></div>
+</main>
+
+<dialog id="dlg"><div class="dlg-body" id="dlg-body"></div></dialog>
+
+<script>
+const el = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const state = { pid: null, tab: 'characters', data: null, roles: ['face','three_quarter','profile','full_body','expression','wardrobe','location_wide','location_detail','lighting','prop_turnaround','other'] };
+
+class ApiError extends Error { constructor(msg, status, body) { super(msg); this.status = status; this.body = body; } }
+async function api(path, options = {}) {
+  const response = await fetch(path, {headers: {'Content-Type': 'application/json', ...(options.headers || {})}, ...options});
+  const type = response.headers.get('content-type') || '';
+  const body = type.includes('json') ? await response.json().catch(() => null) : await response.text();
+  if (!response.ok) {
+    let detail = body && body.detail !== undefined ? body.detail : body;
+    if (Array.isArray(detail)) detail = detail.map(d => d.msg || JSON.stringify(d)).join('; ');
+    else if (detail && typeof detail === 'object') detail = detail.message || JSON.stringify(detail);
+    throw new ApiError(String(detail || `Request failed (${response.status})`), response.status, body);
+  }
+  return body;
+}
+function say(message, bad = false) {
+  const node = el('msg') || document.createElement('div');
+  node.id = 'msg'; node.className = 'msg' + (bad ? ' bad' : ' ok'); node.textContent = message;
+  el('body').prepend(node);
+  node.scrollIntoView({block: 'nearest'});
+}
+const rev = () => state.data?.revision;
+
+async function load() {
+  if (!state.pid) return;
+  state.data = await api(`/api/projects/${state.pid}/studio`);
+  const c = state.data.counts;
+  el('counts').innerHTML = `<b>${c.characters}</b> characters · <b>${c.locations}</b> locations · <b>${c.props}</b> props ·
+    <b>${c.assets}</b> reference images (<span class="pill approved">${c.approved} approved</span>
+    <span class="pill draft">${c.draft} draft</span> <span class="pill rejected">${c.rejected} rejected</span>)`;
+  el('rev').textContent = `revision ${state.data.revision}`;
+  render();
+}
+async function act(fn) {
+  try { await fn(); await load(); } catch (e) { say(e.message, true); }
+}
+
+// ------------------------------------------------------------------ projects & tabs
+(async function boot() {
+  try {
+    const list = await api('/api/projects');
+    el('project-picker').innerHTML = '<option value="">Choose a project…</option>' +
+      list.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join('');
+  } catch {}
+})();
+el('project-picker').addEventListener('change', (e) => { state.pid = e.target.value || null; state.data = null; load(); });
+document.querySelector('.tabs').addEventListener('click', (e) => {
+  const button = e.target.closest('button[data-tab]');
+  if (button) { state.tab = button.dataset.tab; render(); }
+});
+
+// ------------------------------------------------------------------ rendering helpers
+const subjectOptions = (kind, selected) => (state.data?.[kind] || [])
+  .map(s => `<option value="${esc(s.id)}" ${s.id === selected ? 'selected' : ''}>${esc(s.name)}</option>`).join('');
+
+function thumb(asset, holderCanonicalId) {
+  const canonical = asset.id === holderCanonicalId;
+  const broken = asset.file_status !== 'ok';
+  return `<div class="thumb ${canonical ? 'is-canonical' : ''}">
+    ${broken ? `<div class="missing">file ${esc(asset.file_status)}</div>`
+      : `<img src="/api/projects/${state.pid}/assets/${esc(asset.id)}/file" alt="${esc(asset.role)} reference for ${esc(asset.subject_label || 'unassigned')}, version ${asset.version}" loading="lazy" data-zoom="${esc(asset.id)}" />`}
+    <div class="cap"><span class="pill ${esc(asset.state)}">${esc(asset.state)}</span>
+      ${canonical ? '<span class="pill canonical">canonical</span>' : ''}
+      <br>${esc(asset.role)} v${asset.version}
+      <br><button class="secondary small" data-open-asset="${esc(asset.id)}">Open</button></div></div>`;
+}
+
+function assetBlock(assets, holder) {
+  if (!assets.length) return '<div class="meta">No reference images yet.</div>';
+  return `<div class="thumbs">${assets.map(a => thumb(a, holder)).join('')}</div>`;
+}
+
+function field(id, label, value, kind = 'input', extra = '') {
+  const tag = kind === 'textarea'
+    ? `<textarea id="${id}" ${extra}>${esc(value ?? '')}</textarea>`
+    : `<input id="${id}" value="${esc(value ?? '')}" ${extra} />`;
+  return `<label for="${id}">${esc(label)}</label>${tag}`;
+}
+
+// ------------------------------------------------------------------ sections
+function renderCharacters() {
+  const list = state.data.characters;
+  return `<div class="panel"><h2>Add a character</h2>
+      <div class="row">
+        <div>${field('nc-name', 'Name *', '', 'input', 'maxlength="80" placeholder="MAYA RAO"')}</div>
+        <div>${field('nc-age', 'Age range', '', 'input', 'maxlength="80" placeholder="late 20s"')}</div>
+        <button class="auto" id="add-character">Create character</button>
+      </div></div>
+    ${list.length ? `<div class="stack">${list.map(characterCard).join('')}</div>`
+      : '<div class="empty">No characters yet. Parse a screenplay or add one above.</div>'}`;
+}
+
+function characterCard(character) {
+  return `<section class="panel" data-character="${esc(character.id)}">
+    <div class="row" style="align-items:flex-start">
+      <div><h2 style="margin-bottom:2px">${esc(character.name)}</h2>
+        <div class="meta">${esc(character.origin)} · cue ${esc(character.cue_name || '—')} ·
+          ${character.scene_numbers.length ? 'scenes ' + esc(character.scene_numbers.join(', ')) : 'no parsed scenes'} ·
+          ${character.canonical ? 'canonical set' : '<b>no canonical reference</b>'}</div></div>
+      <button class="danger small auto" data-delete-character="${esc(character.id)}">Delete</button>
+    </div>
+    <details><summary>Identity (never changed by a costume variant)</summary>
+      <div class="grid" style="margin-top:8px">
+        <div>${field(`c-${character.id}-age_range`, 'Age range', character.age_range, 'input', 'maxlength="80"')}
+          ${field(`c-${character.id}-hairstyle`, 'Hairstyle', character.hairstyle, 'input', 'maxlength="2000"')}
+          ${field(`c-${character.id}-body_type`, 'Body type', character.body_type, 'input', 'maxlength="2000"')}</div>
+        <div>${field(`c-${character.id}-facial_traits`, 'Facial traits', character.facial_traits, 'textarea', 'maxlength="5000"')}
+          ${field(`c-${character.id}-physical_description`, 'Physical description', character.physical_description, 'textarea', 'maxlength="10000"')}</div>
+        <div>${field(`c-${character.id}-personality`, 'Personality', character.personality, 'textarea', 'maxlength="10000"')}
+          ${field(`c-${character.id}-voice_direction`, 'Voice direction', character.voice_direction, 'textarea', 'maxlength="5000"')}
+          ${field(`c-${character.id}-notes`, 'Notes', character.notes, 'textarea', 'maxlength="10000"')}</div>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="secondary auto" data-save-character="${esc(character.id)}">Save identity</button></div>
+    </details>
+    <h3 style="margin-top:12px">Base look references</h3>
+    ${assetBlock(character.assets.filter(a => !a.wardrobe_id), character.canonical_reference_id)}
+    ${uploadRow('character', character.id, null)}
+    <h3 style="margin-top:14px">Wardrobe variants <span class="meta">(costume changes, tracked separately)</span></h3>
+    <div class="row">
+      <div>${field(`w-${character.id}-name`, 'Variant name', '', 'input', 'maxlength="120" placeholder="Rain coat"')}</div>
+      <div>${field(`w-${character.id}-desc`, 'Description', '', 'input', 'maxlength="300"')}</div>
+      <button class="secondary auto" data-add-wardrobe="${esc(character.id)}">Add variant</button>
+    </div>
+    ${character.wardrobe.length ? character.wardrobe.map(variant => `
+      <div class="card" style="margin-top:10px">
+        <div class="row" style="align-items:center">
+          <div><b>${esc(variant.name)}</b>
+            <div class="meta">${esc(variant.description || 'no description')} ·
+              ${variant.scene_numbers.length ? 'scenes ' + esc(variant.scene_numbers.join(', ')) : 'no scenes set'} ·
+              ${variant.canonical_reference_id ? 'canonical set' : 'no canonical'}</div></div>
+          <button class="danger small auto" data-delete-wardrobe="${esc(character.id)}|${esc(variant.id)}">Delete variant</button>
+        </div>
+        ${assetBlock(character.assets.filter(a => a.wardrobe_id === variant.id), variant.canonical_reference_id)}
+        ${uploadRow('character', character.id, variant.id)}
+      </div>`).join('') : '<div class="meta">No wardrobe variants.</div>'}
+  </section>`;
+}
+
+function uploadRow(subjectType, subjectId, wardrobeId) {
+  const key = `${subjectType}-${subjectId}-${wardrobeId || 'base'}`;
+  return `<div class="row" style="margin-top:8px">
+    <div><label for="up-${key}">Add reference image</label>
+      <input type="file" id="up-${key}" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/tiff" multiple /></div>
+    <div><label for="role-${key}">Role</label><select id="role-${key}">
+      ${state.roles.map(r => `<option value="${r}">${r.replace('_', ' ')}</option>`).join('')}</select></div>
+    <div><label for="lic-${key}">Licence / source</label><input id="lic-${key}" maxlength="300" placeholder="my photo, CC0, model card…" /></div>
+    <button class="auto" data-upload="${esc(subjectType)}|${esc(subjectId)}|${esc(wardrobeId || '')}|${key}">Import</button>
+  </div>`;
+}
+
+function subjectSection(kind, title, extraFields) {
+  const list = state.data[kind];
+  const singular = kind === 'locations' ? 'location' : 'prop';
+  return `<div class="panel"><h2>Add a ${singular}</h2>
+      <div class="row">
+        <div>${field(`n${singular}-name`, 'Name *', '', 'input', 'maxlength="120"')}</div>
+        <div>${field(`n${singular}-desc`, 'Description', '', 'input', 'maxlength="300"')}</div>
+        <button class="auto" data-add-subject="${singular}">Create ${singular}</button>
+      </div></div>
+    ${list.length ? `<div class="stack">${list.map(item => `
+      <section class="panel">
+        <div class="row" style="align-items:flex-start">
+          <div><h2 style="margin-bottom:2px">${esc(item.name)}</h2>
+            <div class="meta">${esc(item.description || 'no description')} ·
+              ${item.canonical ? 'canonical set' : '<b>no canonical reference</b>'} ·
+              ${item.scene_ids.length} scene link(s)</div></div>
+          <button class="danger small auto" data-delete-subject="${singular}|${esc(item.id)}">Delete</button>
+        </div>
+        <details><summary>Details &amp; continuity</summary>
+          <div class="grid" style="margin-top:8px">
+            <div>${field(`s-${item.id}-description`, 'Description', item.description, 'textarea', 'maxlength="10000"')}</div>
+            <div>${field(`s-${item.id}-continuity_requirements`, 'Continuity requirements', item.continuity_requirements, 'textarea', 'maxlength="10000"')}</div>
+            <div>${extraFields(item)}
+              ${field(`s-${item.id}-notes`, 'Notes', item.notes, 'textarea', 'maxlength="10000"')}</div>
+          </div>
+          <div class="row" style="margin-top:8px"><button class="secondary auto" data-save-subject="${singular}|${esc(item.id)}">Save</button></div>
+        </details>
+        ${assetBlock(item.assets, item.canonical_reference_id)}
+        ${uploadRow(singular, item.id, null)}
+      </section>`).join('')}</div>`
+      : `<div class="empty">No ${kind} yet. Add one above — locations and props keep their own reference images and continuity notes.</div>`}`;
+}
+
+function renderReferences() {
+  const assets = state.data.assets;
+  return `<div class="panel"><h2>Import images into the library</h2>
+      <p>Files are copied into <code>assets/</code> inside the project, validated, hashed and kept read-only.
+        Your originals are never moved or changed. You can attach them to a subject now or later.</p>
+      <div class="row">
+        <div><label for="lib-file">Image files</label><input type="file" id="lib-file" accept="image/*" multiple /></div>
+        <div><label for="lib-subject">Attach to</label><select id="lib-subject">
+          <option value="">— unassigned —</option>
+          <optgroup label="Characters">${subjectOptions('characters')}</optgroup>
+          <optgroup label="Locations">${(state.data.locations || []).map(l => `<option value="location:${esc(l.id)}">${esc(l.name)}</option>`).join('')}</optgroup>
+          <optgroup label="Props">${(state.data.props || []).map(p => `<option value="prop:${esc(p.id)}">${esc(p.name)}</option>`).join('')}</optgroup>
+        </select></div>
+        <div><label for="lib-role">Role</label><select id="lib-role">${state.roles.map(r => `<option value="${r}">${r.replace('_', ' ')}</option>`).join('')}</select></div>
+        <button class="auto" id="lib-import">Import</button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <div>${field('lib-path', 'Or an absolute path on this computer', '', 'input', 'placeholder="D:\\refs\\face.png"')}</div>
+        <button class="secondary auto" id="lib-import-path">Import from path</button>
+      </div></div>
+    ${assets.length ? `<div class="grid">${assets.map(asset => `
+      <div class="card">
+        ${asset.file_status === 'ok'
+          ? `<img src="/api/projects/${state.pid}/assets/${esc(asset.id)}/file" alt="${esc(asset.original_filename)}" style="width:100%;height:150px;object-fit:cover;border-radius:8px;cursor:zoom-in" data-zoom="${esc(asset.id)}" loading="lazy" />`
+          : `<div class="empty" style="padding:30px">file ${esc(asset.file_status)}</div>`}
+        <div style="margin-top:8px"><b>${esc(asset.original_filename || asset.id)}</b>
+          <div class="meta"><span class="pill ${esc(asset.state)}">${esc(asset.state)}</span>
+            ${asset.is_canonical ? '<span class="pill canonical">canonical</span>' : ''}
+            <span class="pill">${esc(asset.role)} v${asset.version}</span>
+            <span class="pill">${esc(asset.source)}</span><br>
+            ${esc(asset.subject_label || 'unassigned')} · ${asset.width}×${asset.height} ${esc(asset.image_format)} ·
+            ${Math.round(asset.bytes / 1024)} kB · ${esc(asset.integrity)}</div></div>
+        <div class="row" style="margin-top:8px"><button class="secondary small auto" data-open-asset="${esc(asset.id)}">Open</button></div>
+      </div>`).join('')}</div>`
+      : '<div class="empty">The library is empty. Import a photo, sketch or a generated frame to start a character or location sheet.</div>'}`;
+}
+
+function renderScenes() {
+  const scenes = state.data.scenes;
+  if (!scenes.length) return '<div class="empty">No scenes yet. Save a screenplay and build the breakdown first.</div>';
+  return `<div class="panel"><p>Attach production records to scenes and pick the approved look to use.
+    This never changes the screenplay text.</p></div><div class="stack">${scenes.map(scene => {
+    const location = state.data.locations.find(l => l.id === scene.location_id);
+    const locationAssets = (location?.assets || []).filter(a => a.state === 'approved');
+    return `<section class="panel">
+      <h2>Scene ${scene.number}: ${esc(scene.heading)}</h2>
+      <div class="meta">cues in script: ${esc(scene.cue_names.join(', ') || 'none')}</div>
+      <div class="row">
+        <div><label for="sc-${scene.id}-chars">Characters in this scene</label>
+          <select id="sc-${scene.id}-chars" multiple size="4">${state.data.characters.map(c =>
+            `<option value="${esc(c.id)}" ${scene.character_ids.includes(c.id) ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
+        <div><label for="sc-${scene.id}-props">Props</label>
+          <select id="sc-${scene.id}-props" multiple size="4">${state.data.props.map(p =>
+            `<option value="${esc(p.id)}" ${scene.prop_ids.includes(p.id) ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div>
+        <div><label for="sc-${scene.id}-loc">Location</label>
+          <select id="sc-${scene.id}-loc"><option value="">— none —</option>${subjectOptions('locations', scene.location_id)}</select>
+          <label for="sc-${scene.id}-locref">Approved location reference</label>
+          <select id="sc-${scene.id}-locref" ${locationAssets.length ? '' : 'disabled'}>
+            <option value="">— none —</option>${locationAssets.map(a =>
+              `<option value="${esc(a.id)}" ${scene.location_reference_id === a.id ? 'selected' : ''}>${esc(a.role)} v${a.version}</option>`).join('')}</select>
+          <div class="meta">${locationAssets.length ? '' : 'No approved image for this location yet.'}</div></div>
+        <button class="auto" data-save-scene="${esc(scene.id)}">Save associations</button>
+      </div>
+      ${scene.character_ids.length ? `<h3 style="margin-top:10px">Appearance for this scene</h3>
+        <div class="grid">${scene.character_ids.map(id => {
+          const character = state.data.characters.find(c => c.id === id);
+          if (!character) return '';
+          const selection = scene.appearance_selections.find(s => s.character_id === id) || {};
+          const approved = character.assets.filter(a => a.state === 'approved');
+          return `<div class="card"><b>${esc(character.name)}</b>
+            <label for="ap-${scene.id}-${id}-w">Wardrobe</label>
+            <select id="ap-${scene.id}-${id}-w"><option value="">base look</option>${character.wardrobe.map(w =>
+              `<option value="${esc(w.id)}" ${selection.wardrobe_id === w.id ? 'selected' : ''}>${esc(w.name)}</option>`).join('')}</select>
+            <label for="ap-${scene.id}-${id}-a">Approved image</label>
+            <select id="ap-${scene.id}-${id}-a"><option value="">— none —</option>${approved.map(a =>
+              `<option value="${esc(a.id)}" data-wardrobe="${esc(a.wardrobe_id || '')}" ${selection.asset_id === a.id ? 'selected' : ''}>${esc(a.role)} v${a.version}${a.wardrobe_id ? ' (variant)' : ''}</option>`).join('')}</select>
+            ${approved.length ? '' : '<div class="meta">No approved image for this character yet.</div>'}</div>`;
+        }).join('')}</div>` : ''}
+    </section>`;
+  }).join('')}</div>`;
+}
+
+function render() {
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === state.tab)));
+  if (!state.pid || !state.data) { el('body').innerHTML = '<div class="empty">Choose a project to begin.</div>'; return; }
+  const views = {
+    characters: renderCharacters,
+    locations: () => subjectSection('locations', 'Locations', (item) => `
+      ${field(`s-${item.id}-interior_exterior`, 'INT / EXT', item.interior_exterior, 'input', 'maxlength="20"')}
+      ${field(`s-${item.id}-geography_notes`, 'Geography / screen direction', item.geography_notes, 'textarea', 'maxlength="10000"')}`),
+    props: () => subjectSection('props', 'Props', (item) => `
+      ${field(`s-${item.id}-prop_type`, 'Type', item.prop_type, 'input', 'maxlength="120"')}`),
+    references: renderReferences,
+    scenes: renderScenes,
+  };
+  el('body').innerHTML = views[state.tab]();
+}
+
+// ------------------------------------------------------------------ actions
+async function uploadFiles(input, association, licence) {
+  const files = [...(input?.files || [])];
+  if (!files.length) throw new Error('Choose at least one image file first.');
+  let imported = 0;
+  const problems = [];
+  for (const file of files) {
+    const buffer = await file.arrayBuffer();
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    try {
+      await api(`/api/projects/${state.pid}/assets`, {method: 'POST', body: JSON.stringify({
+        filename: file.name, data_base64: btoa(binary), association, license: licence || '',
+        base_revision: rev()})});
+      imported += 1;
+      state.data = await api(`/api/projects/${state.pid}/studio`);   // keep base_revision fresh
+    } catch (e) { problems.push(`${file.name}: ${e.message}`); }
+  }
+  if (problems.length) throw new Error(`${imported} imported. Problems:\n` + problems.join('\n'));
+  say(`${imported} image(s) imported as drafts.`);
+}
+
+el('body').addEventListener('click', async (e) => {
+  const button = e.target.closest('button');
+  const zoom = e.target.closest('[data-zoom]');
+  if (zoom) return openAsset(zoom.dataset.zoom);
+  if (!button || !state.pid) return;
+  const d = button.dataset;
+
+  if (d.openAsset) return openAsset(d.openAsset);
+  if (button.id === 'add-character') return act(async () => {
+    await api(`/api/projects/${state.pid}/characters`, {method: 'POST', body: JSON.stringify({
+      name: el('nc-name').value.trim(), age_range: el('nc-age').value.trim(), base_revision: rev()})});
+    say('Character created.');
+  });
+  if (d.deleteCharacter) return act(async () => {
+    if (!confirm('Delete this character? Its reference images are kept and become unassigned.')) return;
+    const result = await api(`/api/projects/${state.pid}/characters/${d.deleteCharacter}`,
+      {method: 'DELETE', body: JSON.stringify({base_revision: rev()})});
+    say(`Deleted. ${result.assets_unassigned.length} image(s) kept and unassigned.`);
+  });
+  if (d.saveCharacter) return act(async () => {
+    const id = d.saveCharacter;
+    const payload = {base_revision: rev()};
+    for (const key of ['age_range','hairstyle','body_type','facial_traits','physical_description','personality','voice_direction','notes'])
+      payload[key] = el(`c-${id}-${key}`).value;
+    await api(`/api/projects/${state.pid}/characters/${id}`, {method: 'PATCH', body: JSON.stringify(payload)});
+    say('Identity saved.');
+  });
+  if (d.addWardrobe) return act(async () => {
+    const id = d.addWardrobe;
+    await api(`/api/projects/${state.pid}/characters/${id}/wardrobe`, {method: 'POST', body: JSON.stringify({
+      name: el(`w-${id}-name`).value.trim(), description: el(`w-${id}-desc`).value.trim(), base_revision: rev()})});
+    say('Wardrobe variant added.');
+  });
+  if (d.deleteWardrobe) return act(async () => {
+    const [cid, wid] = d.deleteWardrobe.split('|');
+    if (!confirm('Delete this wardrobe variant? Its images stay attached to the character.')) return;
+    await api(`/api/projects/${state.pid}/characters/${cid}/wardrobe/${wid}`,
+      {method: 'DELETE', body: JSON.stringify({base_revision: rev()})});
+    say('Variant deleted.');
+  });
+  if (d.addSubject) return act(async () => {
+    const kind = d.addSubject;
+    await api(`/api/projects/${state.pid}/${kind}s`, {method: 'POST', body: JSON.stringify({
+      name: el(`n${kind}-name`).value.trim(), description: el(`n${kind}-desc`).value.trim(), base_revision: rev()})});
+    say(`${kind} created.`);
+  });
+  if (d.saveSubject) return act(async () => {
+    const [kind, id] = d.saveSubject.split('|');
+    const payload = {base_revision: rev()};
+    for (const key of ['description','continuity_requirements','notes','interior_exterior','geography_notes','prop_type']) {
+      const node = el(`s-${id}-${key}`);
+      if (node) payload[key] = node.value;
+    }
+    await api(`/api/projects/${state.pid}/${kind}s/${id}`, {method: 'PATCH', body: JSON.stringify(payload)});
+    say('Saved.');
+  });
+  if (d.deleteSubject) return act(async () => {
+    const [kind, id] = d.deleteSubject.split('|');
+    if (!confirm(`Delete this ${kind}? Its reference images are kept and become unassigned.`)) return;
+    await api(`/api/projects/${state.pid}/${kind}s/${id}`, {method: 'DELETE', body: JSON.stringify({base_revision: rev()})});
+    say('Deleted.');
+  });
+  if (d.upload) return act(async () => {
+    const [subjectType, subjectId, wardrobeId, key] = d.upload.split('|');
+    await uploadFiles(el(`up-${key}`), {subject_type: subjectType, subject_id: subjectId,
+      wardrobe_id: wardrobeId || null, role: el(`role-${key}`).value}, el(`lic-${key}`).value);
+  });
+  if (button.id === 'lib-import') return act(async () => {
+    const choice = el('lib-subject').value;
+    const [type, id] = choice.includes(':') ? choice.split(':') : (choice ? ['character', choice] : [null, null]);
+    await uploadFiles(el('lib-file'), {subject_type: type, subject_id: id, role: el('lib-role').value}, '');
+  });
+  if (button.id === 'lib-import-path') return act(async () => {
+    const choice = el('lib-subject').value;
+    const [type, id] = choice.includes(':') ? choice.split(':') : (choice ? ['character', choice] : [null, null]);
+    await api(`/api/projects/${state.pid}/assets`, {method: 'POST', body: JSON.stringify({
+      source_path: el('lib-path').value.trim(), base_revision: rev(),
+      association: {subject_type: type, subject_id: id, role: el('lib-role').value}})});
+    say('Imported from path.');
+  });
+  if (d.saveScene) return act(async () => {
+    const id = d.saveScene;
+    const picked = (node) => [...(node?.selectedOptions || [])].map(o => o.value);
+    const characterIds = picked(el(`sc-${id}-chars`));
+    const selections = characterIds.map(cid => {
+      const wardrobe = el(`ap-${id}-${cid}-w`)?.value || null;
+      const asset = el(`ap-${id}-${cid}-a`)?.value || null;
+      return {character_id: cid, wardrobe_id: wardrobe, asset_id: asset};
+    }).filter(s => s.asset_id || s.wardrobe_id);
+    const body = {character_ids: characterIds, prop_ids: picked(el(`sc-${id}-props`)),
+      appearance_selections: selections, base_revision: rev()};
+    const location = el(`sc-${id}-loc`).value;
+    if (location) { body.location_id = location; } else { body.clear_location = true; }
+    const locationReference = el(`sc-${id}-locref`)?.value;
+    await api(`/api/projects/${state.pid}/scenes/${id}/associations`, {method: 'PUT', body: JSON.stringify(body)});
+    if (locationReference) {
+      await api(`/api/projects/${state.pid}/scenes/${id}/associations`, {method: 'PUT',
+        body: JSON.stringify({location_reference_id: locationReference,
+          base_revision: (await api(`/api/projects/${state.pid}/studio`)).revision})});
+    }
+    say('Scene associations saved. The screenplay text is unchanged.');
+  });
+});
+
+// ------------------------------------------------------------------ asset detail dialog
+async function openAsset(assetId) {
+  let asset;
+  try { asset = await api(`/api/projects/${state.pid}/assets/${assetId}`); }
+  catch (e) { return say(e.message, true); }
+  const subjects = [['character', 'characters'], ['location', 'locations'], ['prop', 'props']];
+  const character = state.data.characters.find(c => c.id === asset.subject_id);
+  el('dlg-body').innerHTML = `
+    <div class="row" style="align-items:flex-start">
+      <div><h2>${esc(asset.original_filename || asset.id)}</h2>
+        <div class="meta"><span class="pill ${esc(asset.state)}">${esc(asset.state)}</span>
+          ${asset.is_canonical ? '<span class="pill canonical">canonical</span>' : ''}
+          <span class="pill">${esc(asset.role)} v${asset.version}</span></div></div>
+      <button class="secondary small auto" id="dlg-close">Close</button>
+    </div>
+    ${asset.file_status === 'ok'
+      ? `<img class="full" src="/api/projects/${state.pid}/assets/${esc(asset.id)}/file" alt="${esc(asset.original_filename)}" />`
+      : `<div class="empty">The stored file is ${esc(asset.file_status)}.</div>`}
+    <dl class="kv" style="margin-top:10px">
+      <dt>Asset id</dt><dd>${esc(asset.id)}</dd>
+      <dt>Stored at</dt><dd>${esc(asset.path)}</dd>
+      <dt>SHA-256</dt><dd>${esc(asset.sha256)}</dd>
+      <dt>Size</dt><dd>${asset.width}×${asset.height} ${esc(asset.image_format)} · ${asset.bytes} bytes · checked: ${esc(asset.integrity)}</dd>
+      <dt>Source</dt><dd>${esc(asset.source)} — ${esc(asset.source_detail || '—')}${asset.job_id ? ` (job ${esc(asset.job_id)})` : ''}</dd>
+      <dt>Imported</dt><dd>${esc(asset.imported_at)}</dd>
+      <dt>Approved</dt><dd>${esc(asset.approved_at || '—')}</dd>
+      <dt>Attached to</dt><dd>${esc(asset.subject_type || 'unassigned')} ${esc(asset.subject_label || '')}${asset.wardrobe_id ? ' / variant' : ''}</dd>
+    </dl>
+    <h3 style="margin-top:12px">Approval</h3>
+    <div class="row">
+      <button class="auto" data-state="approved" ${asset.state === 'approved' ? 'disabled' : ''}>Approve</button>
+      <button class="secondary auto" data-state="draft" ${asset.state === 'draft' ? 'disabled' : ''}>Back to draft</button>
+      <button class="danger auto" data-state="rejected" ${asset.state === 'rejected' ? 'disabled' : ''}>Reject</button>
+      <div>${field('dlg-note', 'Note (recorded in the history)', '', 'input', 'maxlength="500"')}</div>
+    </div>
+    <h3 style="margin-top:12px">Canonical reference</h3>
+    ${asset.subject_id ? `<div class="row">
+        <div><label for="dlg-canon-w">Apply to</label><select id="dlg-canon-w">
+          <option value="">${esc(asset.subject_type)} base look</option>
+          ${(character?.wardrobe || []).filter(w => w.id === asset.wardrobe_id).map(w =>
+            `<option value="${esc(w.id)}" selected>wardrobe: ${esc(w.name)}</option>`).join('')}</select></div>
+        <button class="auto" id="dlg-canonical" ${asset.state === 'approved' ? '' : 'disabled'}>Make canonical</button>
+        <div class="meta">${asset.state === 'approved' ? 'Replacing an existing canonical reference asks for confirmation; the old image is kept.' : 'Approve the image first.'}</div>
+      </div>` : '<div class="meta">Attach this image to a character, location or prop first.</div>'}
+    <h3 style="margin-top:12px">Association &amp; licence</h3>
+    <div class="row">
+      <div><label for="dlg-subject">Attach to</label><select id="dlg-subject">
+        <option value="">— unassigned —</option>
+        ${subjects.map(([type, key]) => `<optgroup label="${type}">${(state.data[key] || []).map(s =>
+          `<option value="${type}:${esc(s.id)}" ${asset.subject_type === type && asset.subject_id === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}
+      </select></div>
+      <div><label for="dlg-role">Role</label><select id="dlg-role">${state.roles.map(r =>
+        `<option value="${r}" ${asset.role === r ? 'selected' : ''}>${r.replace('_', ' ')}</option>`).join('')}</select></div>
+      <div>${field('dlg-licence', 'Licence', asset.license, 'input', 'maxlength="300"')}</div>
+      <button class="secondary auto" id="dlg-save">Save</button>
+    </div>
+    <h3 style="margin-top:12px">Used by</h3>
+    ${asset.references.length ? `<ul class="meta">${asset.references.map(r =>
+      `<li>${esc(r.label)}${r.blocking ? ' <b>(blocks deletion)</b>' : ''}</li>`).join('')}</ul>`
+      : '<div class="meta">Nothing points at this image.</div>'}
+    <div class="row" style="margin-top:10px">
+      <a class="button secondary auto" href="/api/projects/${state.pid}/assets/${esc(asset.id)}/file?download=true" download>Download copy</a>
+      <button class="danger auto" id="dlg-delete">Delete image…</button>
+    </div>
+    <div id="dlg-msg" class="msg"></div>`;
+
+  const dialog = el('dlg');
+  if (!dialog.open) dialog.showModal();
+  const dialogSay = (message, bad = false) => {
+    el('dlg-msg').className = 'msg' + (bad ? ' bad' : ' ok');
+    el('dlg-msg').textContent = message;
+  };
+  const run = async (fn) => {
+    try { await fn(); state.data = await api(`/api/projects/${state.pid}/studio`); render(); await openAsset(assetId); }
+    catch (e) { dialogSay(e.message, true); }
+  };
+
+  el('dlg-close').onclick = () => dialog.close();
+  el('dlg-body').querySelectorAll('[data-state]').forEach(button => {
+    button.onclick = () => run(async () => {
+      const wanted = button.dataset.state;
+      let body = {state: wanted, note: el('dlg-note').value, base_revision: rev()};
+      try {
+        await api(`/api/projects/${state.pid}/assets/${assetId}/state`, {method: 'POST', body: JSON.stringify(body)});
+      } catch (e) {
+        if (e.body?.detail?.code === 'REFERENCED_AS_CANONICAL' && wanted === 'draft' &&
+            confirm(e.message + '\n\nClear the canonical reference and continue?')) {
+          body = {...body, confirm_demote_canonical: true,
+                  base_revision: (await api(`/api/projects/${state.pid}/studio`)).revision};
+          await api(`/api/projects/${state.pid}/assets/${assetId}/state`, {method: 'POST', body: JSON.stringify(body)});
+        } else throw e;
+      }
+    });
+  });
+  if (el('dlg-canonical')) el('dlg-canonical').onclick = () => run(async () => {
+    const wardrobe = el('dlg-canon-w').value;
+    const base = wardrobe
+      ? `/api/projects/${state.pid}/characters/${asset.subject_id}/wardrobe/${wardrobe}/canonical`
+      : `/api/projects/${state.pid}/${asset.subject_type}s/${asset.subject_id}/canonical`;
+    const send = (confirmReplace, revision) => api(base, {method: 'POST', body: JSON.stringify({
+      asset_id: assetId, confirm_replace: confirmReplace, note: el('dlg-note').value, base_revision: revision})});
+    try { await send(false, rev()); }
+    catch (e) {
+      if (e.body?.detail?.code === 'CANONICAL_EXISTS' && confirm(e.message)) {
+        await send(true, (await api(`/api/projects/${state.pid}/studio`)).revision);
+      } else throw e;
+    }
+  });
+  el('dlg-save').onclick = () => run(async () => {
+    const choice = el('dlg-subject').value;
+    const body = {role: el('dlg-role').value, license: el('dlg-licence').value, base_revision: rev()};
+    if (!choice) body.clear_association = true;
+    else { const [type, id] = choice.split(':'); body.subject_type = type; body.subject_id = id; }
+    await api(`/api/projects/${state.pid}/assets/${assetId}`, {method: 'PATCH', body: JSON.stringify(body)});
+  });
+  el('dlg-delete').onclick = async () => {
+    try {
+      const check = await api(`/api/projects/${state.pid}/assets/${assetId}/references`);
+      if (!check.deletable) return dialogSay('Still in use by: ' +
+        check.references.filter(r => r.blocking).map(r => r.label).join(', ') + '. Unlink it there first.', true);
+      if (!confirm('Delete this image and its stored file? A project snapshot is taken first, but the file itself is gone.')) return;
+      await api(`/api/projects/${state.pid}/assets/${assetId}`, {method: 'DELETE',
+        body: JSON.stringify({confirm: true, base_revision: rev()})});
+      dialog.close();
+      await load();
+      say('Reference image deleted.');
+    } catch (e) { dialogSay(e.message, true); }
+  };
+}
+el('dlg').addEventListener('click', (e) => { if (e.target.id === 'dlg') el('dlg').close(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Film House</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101114; --panel:#191b20; --panel2:#20232a; --line:#343741; --text:#f2f3f5; --muted:#a4a9b4; --accent:#d9e2ff; --good:#a8e6c1; --warn:#ffd591; --bad:#ffadad; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--text); }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#101114f2; backdrop-filter:blur(14px); z-index:3; flex-wrap:wrap; }
+    .brand { font-weight:750; letter-spacing:.03em; } .brand span { color:var(--muted); font-weight:400; }
+    .status { color:var(--muted); font-size:12px; }
+    main { max-width:1500px; margin:auto; padding:20px; display:grid; grid-template-columns:minmax(320px,.8fr) minmax(0,1.2fr); gap:18px; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; min-width:0; }
+    h1 { margin:0 0 8px; font-size:22px; } h2 { margin:0 0 12px; font-size:17px; } h3 { margin:0 0 6px; font-size:14px; }
+    p { color:var(--muted); margin:0 0 12px; } label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+    input,textarea,select { width:100%; border:1px solid var(--line); background:#111318; color:var(--text); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; }
+    input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+    textarea { min-height:70px; resize:vertical; }
+    textarea.script { min-height:340px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:13px; }
+    button,.button { border:1px solid #56617a; background:#d9e2ff; color:#131723; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; text-decoration:none; font-size:13px; display:inline-block; }
+    button.secondary,.button.secondary { background:var(--panel2); color:var(--text); border-color:var(--line); }
+    button.small { padding:4px 8px; font-size:12px; font-weight:600; }
+    button:disabled { opacity:.5; cursor:wait; }
+    .row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; } .row > * { flex:1; min-width:120px; } .row > .auto { flex:0 0 auto; min-width:0; }
+    .message { margin-top:10px; color:var(--good); font-size:13px; white-space:pre-wrap; } .error { color:var(--bad); }
+    .metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:0 0 14px; }
+    .metric { background:var(--panel2); border-radius:9px; padding:10px; } .metric strong { display:block; font-size:20px; } .metric span { font-size:11px; color:var(--muted); }
+    .stack { display:grid; gap:12px; } .card { background:var(--panel2); padding:13px; border-radius:9px; border:1px solid var(--line); }
+    .card.flash { border-color:var(--accent); }
+    .meta { color:var(--muted); font-size:12px; }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:99px; padding:1px 7px; font-size:11px; color:var(--muted); margin-right:4px; }
+    .pill.edited { color:var(--accent); border-color:#56617a; }
+    .tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:14px; flex-wrap:wrap; }
+    .tabs button { background:none; border:none; border-bottom:2px solid transparent; color:var(--muted); border-radius:0; padding:8px 12px; }
+    .tabs button[aria-selected="true"] { color:var(--text); border-bottom-color:var(--accent); }
+    .badge { background:#3a2f1a; color:var(--warn); border-radius:99px; padding:0 6px; font-size:11px; margin-left:4px; }
+    .scroll { max-height:calc(100vh - 290px); overflow:auto; padding-right:4px; }
+    .empty { border:1px dashed var(--line); padding:24px; border-radius:10px; text-align:center; color:var(--muted); }
+    .service-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; } .service { padding:9px; background:var(--panel2); border-radius:8px; font-size:12px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; } .grid4 { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:0 10px; }
+    details { margin-top:8px; } summary { cursor:pointer; color:var(--muted); font-size:12px; }
+    .el { font-family:ui-monospace,Consolas,monospace; font-size:12px; padding:2px 6px; border-left:3px solid var(--line); margin:2px 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .el .t { color:var(--muted); font-size:10px; text-transform:uppercase; margin-right:6px; }
+    .el.scene_heading { border-color:#8fb3ff; font-weight:700; } .el.character { border-color:#a8e6c1; margin-left:30%; } .el.dialogue { border-color:#a8e6c1; margin-left:15%; margin-right:15%; }
+    .el.parenthetical { border-color:#7fbf9a; margin-left:22%; font-style:italic; } .el.transition { border-color:#c9a8ff; text-align:right; } .el.note,.el.section,.el.synopsis { border-color:#666; color:var(--muted); }
+    .warn { display:flex; gap:10px; align-items:flex-start; } .warn .sev { font-size:11px; font-weight:700; text-transform:uppercase; min-width:58px; }
+    .sev.error { color:var(--bad); } .sev.warning { color:var(--warn); } .sev.info { color:#8fb3ff; }
+    .warn.acked { opacity:.55; }
+    .savebar { font-size:12px; color:var(--muted); } .savebar.saving { color:var(--warn); } .savebar.err { color:var(--bad); }
+    .banner { background:#3a1f1f; border:1px solid #6b3434; color:var(--bad); padding:10px 12px; border-radius:8px; margin-bottom:12px; display:none; }
+    .viewer { white-space:pre-wrap; font-family:ui-monospace,Consolas,monospace; font-size:12px; max-height:300px; overflow:auto; background:#111318; padding:10px; border-radius:8px; border:1px solid var(--line); }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+    @media(max-width:1000px){ main{grid-template-columns:1fr;padding:12px} .grid4{grid-template-columns:1fr 1fr} .scroll{max-height:none} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">AI FILM HOUSE <span>/ local production engine</span></div>
+  <div class="row" style="flex:1;max-width:620px;align-items:center">
+    <label for="project-picker" class="sr-only">Open project</label>
+    <select id="project-picker"><option value="">Open a saved project…</option></select>
+    <button class="secondary auto" id="new-project">New project</button>
+    <a class="button secondary auto" href="/studio">Studio</a>
+    <a class="button secondary auto" href="/images">Images</a>
+    <a class="button secondary auto" href="/diagnostics">Hardware &amp; Models</a>
+  </div>
+  <div><div class="status" id="api-state">Checking local engine…</div><div class="savebar" id="savebar" role="status" aria-live="polite"></div></div>
+</header>
+<main>
+  <section class="panel" aria-labelledby="setup-title">
+    <h1 id="setup-title">Project &amp; screenplay</h1>
+    <p>The first screenplay you save is kept as a read-only original. Every later save becomes a new version; nothing is overwritten. Everything stays on this computer.</p>
+    <label for="title">Project title</label><input id="title" value="Untitled Short Film" maxlength="120" />
+    <div class="row">
+      <div><label for="ratio">Aspect ratio</label><select id="ratio"><option>16:9</option><option>9:16</option><option>1:1</option><option>2.39:1</option></select></div>
+      <div><label for="style">Visual style</label><input id="style" value="cinematic live-action realism" maxlength="500" /></div>
+    </div>
+    <label for="script">Screenplay <span id="script-version-label"></span></label>
+    <textarea id="script" class="script" spellcheck="false" placeholder="INT. SMALL APARTMENT - NIGHT&#10;&#10;MAYA sits near the window. Rain taps the glass.&#10;&#10;MAYA&#10;(quietly)&#10;I thought you weren't coming.&#10;&#10;ARJUN (O.S.)&#10;I almost didn't.&#10;&#10;Paste your screenplay here…"></textarea>
+    <div class="meta" id="draft-note"></div>
+    <label for="version-note">Version note (optional)</label><input id="version-note" maxlength="300" placeholder="e.g. Tightened scene 3 dialogue" />
+    <div class="row" style="margin-top:12px">
+      <button id="save-script">Create project &amp; save screenplay</button>
+      <button class="secondary" id="breakdown" disabled>Build breakdown</button>
+    </div>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <details id="versions-box" style="display:none"><summary>Script versions</summary><div id="versions" class="stack" style="margin-top:8px"></div><div id="version-viewer"></div></details>
+    <div class="service-grid" id="services"><div class="service">Local model status loads here.</div></div>
+  </section>
+
+  <section class="panel" aria-labelledby="plan-title">
+    <div class="row" style="align-items:flex-start">
+      <div><h2 id="plan-title">Production data</h2><p id="project-subtitle">Create or open a project to begin.</p></div>
+      <a id="export" class="button secondary auto" href="#" style="display:none">Export shot CSV</a>
+    </div>
+    <div class="banner" id="conflict" role="alert"></div>
+    <div class="metrics">
+      <div class="metric"><strong id="scene-count">0</strong><span>SCENES</span></div>
+      <div class="metric"><strong id="character-count">0</strong><span>CHARACTERS</span></div>
+      <div class="metric"><strong id="shot-count">0</strong><span>SHOTS</span></div>
+      <div class="metric"><strong id="warning-count">0</strong><span>OPEN WARNINGS</span></div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="scenes" aria-selected="true">Scenes</button>
+      <button role="tab" data-tab="characters" aria-selected="false">Characters</button>
+      <button role="tab" data-tab="shots" aria-selected="false">Shots</button>
+      <button role="tab" data-tab="warnings" aria-selected="false">Warnings<span class="badge" id="warn-badge" style="display:none"></span></button>
+      <button role="tab" data-tab="history" aria-selected="false">History</button>
+    </div>
+    <div id="tab-body" class="scroll" role="tabpanel"><div class="empty">Your scenes, characters and shots appear here after you build the breakdown.</div></div>
+  </section>
+</main>
+<script>
+const SHOT_STATUSES = ['planned','references_ready','generated','approved','needs_regeneration'];
+const state = { project:null, warnings:null, tab:'scenes', shotFilter:'all', pending:new Map(), saving:false, conflict:false, timer:null };
+const el = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
+function showMessage(text, error=false) { el('message').textContent = text; el('message').className = 'message' + (error ? ' error' : ''); }
+function setSaveState(text, cls='') { el('savebar').textContent = text; el('savebar').className = 'savebar ' + cls; }
+
+class ApiError extends Error { constructor(msg, status, body) { super(msg); this.status = status; this.body = body; } }
+async function api(path, options={}) {
+  const response = await fetch(path, {headers:{'Content-Type':'application/json', ...(options.headers||{})}, ...options});
+  const type = response.headers.get('content-type') || '';
+  const body = type.includes('json') ? await response.json().catch(() => null) : await response.text();
+  if (!response.ok) {
+    let detail = body && body.detail !== undefined ? body.detail : `Request failed (${response.status})`;
+    if (Array.isArray(detail)) detail = detail.map(d => d.msg || JSON.stringify(d)).join('; ');
+    else if (detail && typeof detail === 'object') detail = detail.message || JSON.stringify(detail);
+    throw new ApiError(String(detail), response.status, body);
+  }
+  return body;
+}
+
+// ------------------------------------------------------------------ services & project list
+async function checkHealth() {
+  try { const h = await api('/api/health'); el('api-state').textContent = `Local engine online · v${h.version}`; }
+  catch { el('api-state').textContent = 'Engine unavailable — start the server'; }
+  try {
+    const s = await api('/api/services');
+    el('services').innerHTML = `<div class="service">ComfyUI: <b>${s.comfyui.available?'available':'not connected'}</b><br><span class="meta">${esc(s.comfyui.url)}</span></div><div class="service">Ollama: <b>${s.ollama.available?'available':'not connected'}</b><br><span class="meta">${esc(s.ollama.models.length ? s.ollama.models.join(', ') : s.ollama.url)}</span></div>`;
+  } catch { el('services').innerHTML = '<div class="service">Local service checks unavailable.</div>'; }
+}
+async function refreshProjectList() {
+  try {
+    const list = await api('/api/projects');
+    const current = state.project?.id || '';
+    el('project-picker').innerHTML = '<option value="">Open a saved project…</option>' + list.map(p =>
+      `<option value="${esc(p.id)}" ${p.id===current?'selected':''}>${esc(p.title)} · ${p.scene_count} scenes · ${p.shot_count} shots</option>`).join('');
+  } catch {}
+}
+
+// ------------------------------------------------------------------ project load / script
+const draftKey = () => `filmhouse:draft:${state.project?.id || 'new'}`;
+function setProject(p, {renderScript=false} = {}) {
+  state.project = p;
+  el('project-subtitle').textContent = `${p.title} · revision ${p.revision} · ${p.status.replace('_',' ')} · saved locally (${p.id.slice(0,8)})`;
+  el('save-script').textContent = p.script_versions.length ? 'Save script as new version' : 'Save screenplay';
+  el('breakdown').disabled = !p.script_versions.length;
+  el('breakdown').textContent = p.scenes.length ? 'Rebuild breakdown from current script' : 'Build breakdown';
+  el('script-version-label').textContent = p.current_script_version ? `(current: v${p.current_script_version}${p.current_script_version===1?' — original':''})` : '';
+  el('export').style.display = p.shots.length ? 'inline-block' : 'none';
+  el('export').href = `/api/projects/${p.id}/shot-list.csv`;
+  el('scene-count').textContent = p.scenes.length; el('character-count').textContent = p.characters.length; el('shot-count').textContent = p.shots.length;
+  if (renderScript) {
+    el('title').value = p.title; el('ratio').value = p.aspect_ratio; el('style').value = p.visual_style;
+    const draft = localStorage.getItem(draftKey());
+    el('script').value = draft !== null && draft !== p.script ? draft : p.script;
+    el('draft-note').textContent = draft !== null && draft !== p.script ? 'Restored an unsaved draft from this browser. Save it as a new version or reload the project to discard it.' : '';
+    renderVersions();
+  }
+}
+async function openProject(id) {
+  if (state.pending.size && !confirm('Some edits are still being saved. Switch anyway?')) return;
+  state.pending.clear(); hideConflict();
+  try {
+    const p = await api(`/api/projects/${id}`);
+    setProject(p, {renderScript:true});
+    await loadWarnings(); render();
+    showMessage(`Opened "${p.title}".`);
+  } catch (e) { showMessage(e.message, true); }
+}
+el('project-picker').addEventListener('change', (e) => { if (e.target.value) openProject(e.target.value); });
+el('new-project').addEventListener('click', () => {
+  if (state.pending.size && !confirm('Some edits are still being saved. Start a new project anyway?')) return;
+  state.project = null; state.warnings = null; state.pending.clear(); hideConflict();
+  el('title').value = 'Untitled Short Film'; el('script').value = localStorage.getItem('filmhouse:draft:new') || '';
+  el('version-note').value = ''; el('draft-note').textContent = ''; el('script-version-label').textContent = '';
+  el('save-script').textContent = 'Create project & save screenplay'; el('breakdown').disabled = true;
+  el('versions-box').style.display = 'none'; el('project-subtitle').textContent = 'Create or open a project to begin.';
+  el('export').style.display = 'none'; el('project-picker').value = '';
+  ['scene-count','character-count','shot-count','warning-count'].forEach(i => el(i).textContent = '0');
+  render();
+});
+el('script').addEventListener('input', () => { try { localStorage.setItem(draftKey(), el('script').value); } catch {} });
+
+el('save-script').addEventListener('click', async () => {
+  const script = el('script').value.trim();
+  if (!script) return showMessage('Paste your screenplay first.', true);
+  await flushNow();
+  el('save-script').disabled = true;
+  try {
+    if (!state.project) {
+      const created = await api('/api/projects', {method:'POST', body:JSON.stringify({title: el('title').value.trim() || 'Untitled Short Film'})});
+      try { localStorage.removeItem('filmhouse:draft:new'); } catch {}
+      state.project = created;
+    }
+    const before = state.project.current_script_version;
+    const p = await api(`/api/projects/${state.project.id}/script`, {method:'PUT', body:JSON.stringify({
+      script, aspect_ratio: el('ratio').value, visual_style: el('style').value, language:'English',
+      note: el('version-note').value, base_revision: state.project.revision })});
+    try { localStorage.removeItem(draftKey()); } catch {}
+    el('version-note').value = ''; el('draft-note').textContent = '';
+    setProject(p, {renderScript:true});
+    showMessage(p.current_script_version === before ? 'Script unchanged; project settings saved.' :
+      p.current_script_version === 1 ? 'Screenplay saved as the read-only original (v1). Next: build the breakdown.' :
+      `Saved as script v${p.current_script_version}. Earlier versions are kept. Rebuild the breakdown to use it.`);
+    await loadWarnings(); render(); refreshProjectList();
+  } catch (e) { handleError(e); }
+  finally { el('save-script').disabled = false; }
+});
+
+el('breakdown').addEventListener('click', async () => {
+  if (!state.project) return;
+  await flushNow();
+  el('breakdown').disabled = true;
+  const run = (force) => api(`/api/projects/${state.project.id}/breakdown`, {method:'POST', body:JSON.stringify({base_revision: state.project.revision, force})});
+  try {
+    let p;
+    try { p = await run(false); }
+    catch (e) {
+      if (e.status === 409 && e.body?.detail?.code === 'BREAKDOWN_WOULD_REPLACE_EDITS') {
+        if (!confirm(e.message)) return;
+        p = await run(true);
+      } else throw e;
+    }
+    setProject(p); await loadWarnings(); state.tab = 'scenes'; render(); refreshProjectList();
+    showMessage(`Breakdown built from script v${p.breakdown_script_version}: ${p.scenes.length} scene(s), ${p.characters.length} character(s), ${p.shots.length} draft shots, ${p.parse_warnings.length} parser warning(s). A snapshot was saved.`);
+  } catch (e) { handleError(e); }
+  finally { el('breakdown').disabled = !state.project?.script_versions.length; }
+});
+
+function renderVersions() {
+  const p = state.project;
+  if (!p || !p.script_versions.length) { el('versions-box').style.display = 'none'; return; }
+  el('versions-box').style.display = 'block';
+  el('versions').innerHTML = [...p.script_versions].reverse().map(v => `<div class="card"><div class="row" style="align-items:center">
+    <div><b>v${v.number}</b> ${v.number===1?'<span class="pill">original · read-only</span>':''}${v.number===p.current_script_version?'<span class="pill edited">current</span>':''}${v.number===p.breakdown_script_version?'<span class="pill">used by breakdown</span>':''}
+    <div class="meta">${esc(new Date(v.created_at).toLocaleString())} · ${v.characters.toLocaleString()} chars · sha256 ${esc(v.sha256.slice(0,10))}… ${v.note?'· '+esc(v.note):''}</div></div>
+    <button class="secondary small auto" data-action="view-version" data-n="${v.number}">View</button>
+    <button class="secondary small auto" data-action="load-version" data-n="${v.number}">Load into editor</button></div></div>`).join('');
+}
+el('versions').addEventListener('click', async (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  const n = Number(b.dataset.n);
+  try {
+    const text = await api(`/api/projects/${state.project.id}/script/versions/${n}`);
+    if (b.dataset.action === 'view-version') el('version-viewer').innerHTML = `<h3 style="margin-top:10px">Script v${n} (read-only)</h3><div class="viewer">${esc(text)}</div>`;
+    else { el('script').value = text; localStorage.setItem(draftKey(), text); el('draft-note').textContent = `Loaded v${n} into the editor. Saving creates a new version; v${n} itself is never changed.`; }
+  } catch (err) { showMessage(err.message, true); }
+});
+
+// ------------------------------------------------------------------ autosave queue
+// Edits are merged per record, debounced, and sent one at a time with the current revision.
+function queueEdit(kind, id, field, value) {
+  if (state.conflict) return;
+  const key = `${kind}:${id}`;
+  const entry = state.pending.get(key) || {kind, id, fields:{}};
+  entry.fields[field] = value;
+  state.pending.set(key, entry);
+  setSaveState('Unsaved changes…', 'saving');
+  clearTimeout(state.timer);
+  state.timer = setTimeout(flushQueue, 700);
+}
+async function flushQueue() {
+  if (state.saving || state.conflict || !state.project) return;
+  state.saving = true;
+  try {
+    while (state.pending.size && !state.conflict) {
+      const [key, entry] = state.pending.entries().next().value;
+      state.pending.delete(key);
+      setSaveState('Saving…', 'saving');
+      const path = {scene:'scenes', character:'characters', shot:'shots'}[entry.kind];
+      try {
+        const p = await api(`/api/projects/${state.project.id}/${path}/${entry.id}`, {method:'PATCH',
+          body: JSON.stringify({...entry.fields, base_revision: state.project.revision})});
+        setProject(p);
+        if (entry.kind === 'character' && 'name' in entry.fields) state.renameDirty = true;
+      } catch (e) {
+        if (e.status === 409) { state.pending.set(key, entry); showConflict(); break; }
+        // Validation errors: drop this edit, tell the user, keep going.
+        setSaveState(`Not saved: ${e.message}`, 'err');
+        markField(entry, e.message);
+        continue;
+      }
+      setSaveState(`All changes saved · revision ${state.project.revision} · ${new Date().toLocaleTimeString()}`);
+    }
+    if (!state.pending.size && !state.conflict) { await loadWarnings(); if (state.renameDirty) { state.renameDirty = false; render(); } }
+  } finally { state.saving = false; if (state.pending.size && !state.conflict) flushQueue(); }
+}
+async function flushNow() { clearTimeout(state.timer); await flushQueue(); while (state.saving) await new Promise(r => setTimeout(r, 50)); }
+function markField(entry, msg) {
+  const card = document.querySelector(`[data-card="${entry.kind}:${entry.id}"]`);
+  if (card) { const m = card.querySelector('.field-error'); if (m) m.textContent = msg; }
+}
+function showConflict() {
+  state.conflict = true;
+  el('conflict').style.display = 'block';
+  el('conflict').innerHTML = 'This project was changed in another tab or window, so your latest edit was <b>not</b> saved (to avoid overwriting the other change). <button class="small" id="reload-conflict">Reload project</button>';
+  el('reload-conflict').onclick = () => { state.conflict = false; openProject(state.project.id); };
+  setSaveState('Edit conflict — reload needed', 'err');
+}
+function hideConflict() { state.conflict = false; el('conflict').style.display = 'none'; }
+window.addEventListener('beforeunload', (e) => { if (state.pending.size || state.saving) { e.preventDefault(); e.returnValue = ''; } });
+
+function handleError(e) {
+  if (e.status === 409 && e.body?.code === 'REVISION_CONFLICT') showConflict();
+  showMessage(e.message, true);
+}
+
+// ------------------------------------------------------------------ warnings
+async function loadWarnings() {
+  if (!state.project) return;
+  try { state.warnings = await api(`/api/projects/${state.project.id}/warnings`); } catch { return; }
+  const s = state.warnings.summary, open = s.errors + s.warnings + s.info;
+  el('warning-count').textContent = open;
+  el('warn-badge').style.display = (s.errors + s.warnings) ? 'inline' : 'none';
+  el('warn-badge').textContent = s.errors + s.warnings;
+  if (state.tab === 'warnings') render();
+}
+
+// ------------------------------------------------------------------ rendering
+document.querySelector('.tabs').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-tab]'); if (!b) return;
+  state.tab = b.dataset.tab; render();
+});
+
+const field = (kind, id, name, label, value, type='text', extra='') => {
+  const fid = `${kind}-${id}-${name}`;
+  if (type === 'textarea') return `<label for="${fid}">${label}</label><textarea id="${fid}" data-kind="${kind}" data-id="${id}" data-field="${name}" ${extra}>${esc(value)}</textarea>`;
+  return `<label for="${fid}">${label}</label><input id="${fid}" type="${type}" data-kind="${kind}" data-id="${id}" data-field="${name}" value="${esc(value)}" ${extra}/>`;
+};
+const castField = (kind, id, names) => field(kind, id, 'characters', 'Characters (comma separated)', names.join(', '), 'text', 'data-list="1"');
+
+function renderScenes(p) {
+  return p.scenes.map(s => `<div class="card" data-card="scene:${s.id}" id="scene-${s.id}">
+    <h3>Scene ${s.number}${s.scene_tag ? ` <span class="pill">script #${esc(s.scene_tag)}</span>` : ''} ${s.manually_edited?'<span class="pill edited">edited</span>':''}</h3>
+    <div class="meta">${p.shots.filter(x=>x.scene_id===s.id).length} shots · lines ${s.start_line ?? '?'}–${s.end_line ?? '?'} · ${s.elements.filter(e=>e.type==='dialogue').length} dialogue blocks</div>
+    ${field('scene', s.id, 'heading', 'Heading', s.heading, 'text', 'maxlength="300" required')}
+    <div class="grid4">
+      <div>${field('scene', s.id, 'location', 'Location', s.location, 'text', 'maxlength="200"')}</div>
+      <div>${field('scene', s.id, 'time_of_day', 'Time of day', s.time_of_day, 'text', 'maxlength="80"')}</div>
+      <div><label for="scene-${s.id}-ie">INT / EXT</label><select id="scene-${s.id}-ie" data-kind="scene" data-id="${s.id}" data-field="interior_exterior">${['INT','EXT','INT/EXT','EST','Unspecified'].map(o=>`<option ${o===s.interior_exterior?'selected':''}>${o}</option>`).join('')}</select></div>
+      <div></div>
+    </div>
+    ${castField('scene', s.id, s.characters)}
+    ${field('scene', s.id, 'notes', 'Continuity / production notes', s.notes, 'textarea', 'maxlength="10000"')}
+    <div class="field-error error meta"></div>
+    <details><summary>Parsed screenplay blocks (${s.elements.length}) — read-only, from script v${p.breakdown_script_version ?? '?'}</summary>
+      ${s.elements.map(e => `<div class="el ${e.type}"><span class="t">${e.type.replace('_',' ')}${e.extensions.length?' · '+esc(e.extensions.join(', ')):''}${e.dual?' · dual':''}</span>${esc(e.text)}</div>`).join('') || '<div class="meta">No blocks.</div>'}
+    </details></div>`).join('');
+}
+function renderCharacters(p) {
+  return p.characters.map(c => `<div class="card" data-card="character:${c.id}" id="character-${c.id}">
+    <h3>${esc(c.name)} ${c.manually_edited?'<span class="pill edited">edited</span>':''}</h3>
+    <div class="meta">Cue: ${esc(c.cue_name || '—')} · ${c.dialogue_count} speech(es) · scenes ${esc(c.scene_numbers.join(', ') || 'none')}${c.extensions_seen.length?' · '+esc(c.extensions_seen.join(', ')):''}</div>
+    ${field('character', c.id, 'name', 'Display name', c.name, 'text', 'maxlength="80" required')}
+    ${field('character', c.id, 'description', 'Description (age, personality, backstory)', c.description, 'textarea', 'maxlength="10000"')}
+    <div class="grid2">
+      <div>${field('character', c.id, 'visual_signature', 'Visual signature (face, hair, wardrobe)', c.visual_signature, 'textarea', 'maxlength="5000"')}</div>
+      <div>${field('character', c.id, 'voice_direction', 'Voice direction', c.voice_direction, 'textarea', 'maxlength="5000"')}</div>
+    </div>
+    ${field('character', c.id, 'notes', 'Notes', c.notes, 'textarea', 'maxlength="10000"')}
+    <div class="field-error error meta"></div></div>`).join('');
+}
+function renderShots(p) {
+  const filter = `<div class="row" style="margin-bottom:10px"><div><label for="shot-filter">Show</label><select id="shot-filter">${['all',...SHOT_STATUSES].map(o=>`<option value="${o}" ${o===state.shotFilter?'selected':''}>${o.replace('_',' ')}</option>`).join('')}</select></div>
+    <div class="meta auto">Total planned duration: <b>${p.shots.reduce((a,s)=>a+s.duration_seconds,0).toFixed(1)}s</b></div></div>`;
+  let html = '';
+  for (const scene of p.scenes) {
+    const shots = p.shots.filter(s => s.scene_id === scene.id && (state.shotFilter === 'all' || s.status === state.shotFilter));
+    if (!shots.length) continue;
+    html += `<h3 style="margin-top:6px">Scene ${scene.number}: ${esc(scene.heading)}</h3>` + shots.map(s => `<div class="card" data-card="shot:${s.id}" id="shot-${s.id}">
+      <h3>Shot ${s.scene_number}.${s.number} ${s.manually_edited?'<span class="pill edited">edited</span>':''}<span class="pill">${esc(s.status.replace('_',' '))}</span></h3>
+      <div class="grid4">
+        <div>${field('shot', s.id, 'shot_type', 'Shot type', s.shot_type, 'text', 'maxlength="80" required')}</div>
+        <div>${field('shot', s.id, 'duration_seconds', 'Duration (s)', s.duration_seconds, 'number', 'min="0.1" max="120" step="0.1" required')}</div>
+        <div><label for="shot-${s.id}-status">Status</label><select id="shot-${s.id}-status" data-kind="shot" data-id="${s.id}" data-field="status">${SHOT_STATUSES.map(o=>`<option value="${o}" ${o===s.status?'selected':''}>${o.replace('_',' ')}</option>`).join('')}</select></div>
+        <div></div>
+      </div>
+      ${castField('shot', s.id, s.characters)}
+      ${field('shot', s.id, 'visual_prompt', 'Visual prompt', s.visual_prompt, 'textarea', 'maxlength="10000"')}
+      ${field('shot', s.id, 'motion_prompt', 'Motion prompt', s.motion_prompt, 'textarea', 'maxlength="10000"')}
+      <div class="grid2"><div>${field('shot', s.id, 'audio_notes', 'Audio notes', s.audio_notes, 'textarea', 'maxlength="10000"')}</div>
+      <div>${field('shot', s.id, 'notes', 'Notes', s.notes, 'textarea', 'maxlength="10000"')}</div></div>
+      <div class="field-error error meta"></div></div>`).join('');
+  }
+  return filter + (html || '<div class="empty">No shots match this filter.</div>');
+}
+function renderWarnings() {
+  const w = state.warnings;
+  if (!w) return '<div class="empty">Loading warnings…</div>';
+  if (!w.warnings.length) return '<div class="empty">No warnings. The parser and data checks found nothing to review.</div>';
+  return `<p>Warnings never block saving. Fix the record (most warnings link to it) or acknowledge the warning if it is intentional.</p>` +
+    w.warnings.map(x => `<div class="card warn ${x.acknowledged?'acked':''}"><span class="sev ${x.severity}">${x.severity}</span>
+      <div style="flex:1"><div>${esc(x.message)}</div><div class="meta">${esc(x.code)}${x.line?` · script line ${x.line}`:''}</div></div>
+      ${x.entity_id && x.entity_type ? `<button class="secondary small auto" data-goto="${esc(x.entity_type)}:${esc(x.entity_id)}">Go to</button>` : ''}
+      <button class="secondary small auto" data-ack="${esc(x.id)}" data-val="${x.acknowledged?'0':'1'}">${x.acknowledged?'Re-open':'Acknowledge'}</button></div>`).join('');
+}
+async function renderHistory(p) {
+  const body = el('tab-body');
+  body.innerHTML = '<div class="empty">Loading snapshots…</div>';
+  let snaps = [];
+  try { snaps = await api(`/api/projects/${p.id}/snapshots`); } catch (e) { body.innerHTML = `<div class="empty error">${esc(e.message)}</div>`; return; }
+  if (state.tab !== 'history') return;
+  body.innerHTML = `<p>Snapshots are full copies of the production data (scenes, characters, shots, warnings). They are taken automatically while you edit (at most every couple of minutes), before every rebuild/script change/restore, and whenever you ask. Restoring first snapshots the current state, so it can be undone.</p>
+    <div class="row" style="margin-bottom:12px"><div><label for="snap-label">Snapshot label</label><input id="snap-label" maxlength="120" placeholder="e.g. Before director review"/></div>
+      <button class="auto" id="make-snap">Take snapshot</button><a class="button secondary auto" href="/api/projects/${p.id}/manifest" target="_blank" rel="noopener">View asset manifest</a></div>
+    <div class="stack">${snaps.map(s => `<div class="card"><div class="row" style="align-items:center"><div><b>${esc(s.label || s.reason.replace(/-/g,' '))}</b> <span class="pill">${esc(s.reason)}</span>
+      <div class="meta">${esc(new Date(s.created_at).toLocaleString())} · revision ${s.revision}</div></div>
+      <button class="secondary small auto" data-restore="${esc(s.id)}">Restore</button></div></div>`).join('') || '<div class="empty">No snapshots yet.</div>'}</div>`;
+}
+
+function render() {
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === state.tab)));
+  const p = state.project, body = el('tab-body');
+  if (!p) { body.innerHTML = '<div class="empty">Create or open a project to begin.</div>'; return; }
+  if (state.tab === 'history') { renderHistory(p); return; }
+  if (state.tab === 'warnings') { body.innerHTML = renderWarnings(); return; }
+  if (!p.scenes.length) { body.innerHTML = `<div class="empty">${p.script_versions.length ? 'Screenplay saved. Click “Build breakdown” to parse scenes, characters and draft shots.' : 'Save a screenplay to begin.'}</div>`; return; }
+  const html = state.tab === 'scenes' ? renderScenes(p) : state.tab === 'characters' ? (renderCharacters(p) || '<div class="empty">No characters detected. Character cues must be uppercase on their own line above dialogue.</div>') : renderShots(p);
+  body.innerHTML = `<div class="stack">${html}</div>`;
+}
+
+// Field edits → autosave queue
+el('tab-body').addEventListener('input', (e) => {
+  const t = e.target; if (!t.dataset.kind) return;
+  let value = t.value;
+  if (t.dataset.list) value = value.split(',').map(v => v.trim()).filter(Boolean);
+  if (t.type === 'number') { if (t.value === '' || !t.checkValidity()) { markField({kind:t.dataset.kind,id:t.dataset.id}, 'Enter a duration between 0.1 and 120 seconds.'); return; } value = Number(t.value); markField({kind:t.dataset.kind,id:t.dataset.id}, ''); }
+  if (t.required && !String(value).trim()) { markField({kind:t.dataset.kind,id:t.dataset.id}, 'This field cannot be empty.'); return; }
+  queueEdit(t.dataset.kind, t.dataset.id, t.dataset.field, value);
+});
+el('tab-body').addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'shot-filter') { state.shotFilter = t.value; render(); return; }
+  if (t.tagName === 'SELECT' && t.dataset.kind) queueEdit(t.dataset.kind, t.dataset.id, t.dataset.field, t.value);
+});
+el('tab-body').addEventListener('click', async (e) => {
+  const b = e.target.closest('button'); if (!b || !state.project) return;
+  const pid = state.project.id;
+  try {
+    if (b.dataset.ack) {
+      await flushNow();
+      state.warnings = await api(`/api/projects/${pid}/warnings/${b.dataset.ack}/ack`, {method:'POST', body:JSON.stringify({acknowledged: b.dataset.val === '1', base_revision: state.project.revision})});
+      state.project.revision = state.warnings.revision; setProject(state.project); await loadWarnings(); render();
+    } else if (b.dataset.goto) {
+      const [type, id] = b.dataset.goto.split(':');
+      state.tab = {scene:'scenes', character:'characters', shot:'shots'}[type] || 'scenes'; state.shotFilter = 'all'; render();
+      const target = document.getElementById(`${type}-${id}`);
+      if (target) { target.scrollIntoView({behavior:'smooth', block:'center'}); target.classList.add('flash'); target.querySelector('input,textarea,select')?.focus({preventScroll:true}); }
+    } else if (b.id === 'make-snap') {
+      await flushNow();
+      await api(`/api/projects/${pid}/snapshots`, {method:'POST', body:JSON.stringify({label: el('snap-label').value})});
+      showMessage('Snapshot saved.'); render();
+    } else if (b.dataset.restore) {
+      if (!confirm('Restore this snapshot? The current state is snapshotted first, so you can undo this.')) return;
+      await flushNow();
+      const p = await api(`/api/projects/${pid}/snapshots/${b.dataset.restore}/restore`, {method:'POST', body:JSON.stringify({base_revision: state.project.revision})});
+      setProject(p, {renderScript:true}); await loadWarnings(); render();
+      showMessage('Snapshot restored. The previous state was saved as a "pre-restore" snapshot.');
+    }
+  } catch (err) { handleError(err); }
+});
+
+checkHealth(); refreshProjectList(); render();
+</script>
+</body>
+</html>

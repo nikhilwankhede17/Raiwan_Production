@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Images (ComfyUI) — AI Film House</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101114; --panel:#191b20; --panel2:#20232a; --line:#343741; --text:#f2f3f5; --muted:#a4a9b4; --accent:#d9e2ff; --good:#a8e6c1; --warn:#ffd591; --bad:#ffadad; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--text); }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#101114f2; z-index:3; flex-wrap:wrap; }
+    .brand { font-weight:750; letter-spacing:.03em; } .brand span { color:var(--muted); font-weight:400; }
+    main { max-width:1500px; margin:auto; padding:20px; display:grid; grid-template-columns:minmax(340px,1fr) minmax(0,1.15fr); gap:18px; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; min-width:0; }
+    h1 { margin:0 0 6px; font-size:21px; } h2 { margin:0 0 10px; font-size:16px; } h3 { margin:0 0 6px; font-size:14px; }
+    p { color:var(--muted); margin:0 0 12px; } label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+    a { color:var(--accent); }
+    input,textarea,select { width:100%; border:1px solid var(--line); background:#111318; color:var(--text); border-radius:8px; padding:8px 10px; font:inherit; font-size:13px; }
+    input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+    textarea { min-height:74px; resize:vertical; }
+    button,.button { border:1px solid #56617a; background:#d9e2ff; color:#131723; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; text-decoration:none; font-size:13px; display:inline-block; }
+    button.secondary,.button.secondary { background:var(--panel2); color:var(--text); border-color:var(--line); }
+    button.small { padding:4px 9px; font-size:12px; font-weight:600; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; } .row > * { flex:1; min-width:110px; } .row > .auto { flex:0 0 auto; min-width:0; }
+    .card { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px; }
+    .stack { display:grid; gap:10px; }
+    .meta { color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:99px; padding:1px 8px; font-size:11px; color:var(--muted); margin:0 4px 3px 0; }
+    .pill.ok { color:var(--good); border-color:#3d6b52; } .pill.bad { color:var(--bad); border-color:#6b3434; } .pill.warn { color:var(--warn); border-color:#6b5a3a; }
+    .state { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+    .ok { color:var(--good); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+    .banner { border:1px solid var(--line); background:var(--panel2); border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:14px; }
+    .banner.bad { border-color:#6b3434; background:#2a1b1b; color:var(--bad); }
+    .banner.ok { border-color:#3d6b52; background:#1b2a22; }
+    .problem { font-size:12px; padding:5px 8px; border-left:3px solid var(--line); margin:4px 0; }
+    .problem.error { border-color:var(--bad); color:var(--bad); } .problem.warning { border-color:var(--warn); color:var(--warn); }
+    table.map { width:100%; border-collapse:collapse; font-size:13px; } table.map td, table.map th { padding:5px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:middle; }
+    table.map th { color:var(--muted); font-weight:600; font-size:12px; }
+    .shots { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+    .shots img { width:100%; border-radius:8px; border:1px solid var(--line); display:block; background:#0b0c0f; }
+    .scroll { max-height:70vh; overflow:auto; padding-right:4px; }
+    pre.log { font-size:11px; color:var(--muted); background:#111318; border:1px solid var(--line); border-radius:8px; padding:8px; max-height:160px; overflow:auto; white-space:pre-wrap; margin:8px 0 0; }
+    code { background:#111318; border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-size:12px; }
+    details summary { cursor:pointer; color:var(--muted); font-size:12px; margin:4px 0; }
+    .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+    @media(max-width:1000px){ main{grid-template-columns:1fr;padding:12px} .scroll{max-height:none} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">AI FILM HOUSE <span>/ images (local ComfyUI)</span></div>
+  <div class="row" style="flex:1;max-width:520px;align-items:center">
+    <label for="project-picker" class="sr-only">Project</label>
+    <select id="project-picker"><option value="">Choose a project…</option></select>
+  </div>
+  <div><a class="button secondary" href="/">← Projects</a> <a class="button secondary" href="/diagnostics">Hardware</a></div>
+</header>
+<main>
+  <section class="panel">
+    <h1>Workflow</h1>
+    <p>Generation runs on <b>your</b> ComfyUI on this computer. Import a workflow saved with ComfyUI's
+      <b>Export (API)</b>, map each field to a node, validate, then generate. Workflows are never assumed to be
+      interchangeable: each one is pinned by SHA-256 and mapped separately.</p>
+    <div id="comfy-banner" class="banner">Checking for a local ComfyUI…</div>
+
+    <h2>1. Import an API workflow</h2>
+    <div class="row">
+      <div><label for="wf-name">Name</label><input id="wf-name" maxlength="120" placeholder="SDXL character reference" /></div>
+      <div class="auto"><label for="wf-file">File</label><input id="wf-file" type="file" accept="application/json,.json" /></div>
+    </div>
+    <div class="row" style="margin-top:8px"><button id="import" class="auto" disabled>Import workflow</button></div>
+    <div id="import-message" class="meta" role="status" aria-live="polite"></div>
+
+    <h2 style="margin-top:18px">2. Imported workflows</h2>
+    <div id="workflow-list" class="stack"><div class="meta">Choose a project to see its workflows.</div></div>
+
+    <div id="mapping-section" style="display:none">
+      <h2 style="margin-top:18px">3. Map nodes</h2>
+      <p>Pick the exact node and input for each field. Only typed-in (unwired) inputs can be driven.</p>
+      <table class="map"><thead><tr><th scope="col">Field</th><th scope="col">Node → input</th></tr></thead>
+        <tbody id="mapping-rows"></tbody></table>
+      <label for="output-nodes">Output nodes to collect</label>
+      <select id="output-nodes" multiple size="3"></select>
+      <div class="row" style="margin-top:10px">
+        <button id="save-mapping" class="auto">Save mapping</button>
+        <button id="validate" class="secondary auto">Validate against ComfyUI</button>
+        <button id="use-suggestions" class="secondary auto">Fill from suggestions</button>
+      </div>
+      <div id="validation" class="stack" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h1>Generate</h1>
+    <div id="gen-form" style="display:none">
+      <label for="prompt">Prompt</label>
+      <textarea id="prompt" maxlength="20000" placeholder="medium close-up of MAYA at the rain-soaked cafe window, motivated practical lighting, 35mm, no text"></textarea>
+      <label for="negative">Negative prompt</label>
+      <textarea id="negative" maxlength="20000" style="min-height:52px" placeholder="text, watermark, extra fingers"></textarea>
+      <div class="row">
+        <div><label for="width">Width</label><input id="width" type="number" min="64" max="8192" step="8" /></div>
+        <div><label for="height">Height</label><input id="height" type="number" min="64" max="8192" step="8" /></div>
+        <div><label for="seed">Seed</label><input id="seed" type="number" min="0" step="1" /></div>
+        <div class="auto" style="padding-bottom:9px"><label for="random-seed">&nbsp;</label>
+          <label style="display:flex;gap:6px;align-items:center;color:var(--text);font-size:13px;margin:0">
+            <input type="checkbox" id="random-seed" style="width:auto" checked /> random seed</label></div>
+      </div>
+      <div class="row">
+        <div><label for="target-type">This frame is for</label>
+          <select id="target-type"><option value="freeform">anything (freeform)</option><option value="character">a character reference</option><option value="location">a location reference</option><option value="shot">a storyboard shot</option></select></div>
+        <div><label for="target-id">Character / location / shot</label><select id="target-id"><option value="">—</option></select></div>
+      </div>
+      <div class="row">
+        <div><label for="reference">Reference image (optional)</label><select id="reference"><option value="">none</option></select></div>
+      </div>
+      <div id="reference-hint" class="meta"></div>
+      <div class="row" style="margin-top:12px"><button id="generate" class="auto">Generate image</button>
+        <button id="refresh-jobs" class="secondary auto">Refresh</button></div>
+      <div id="gen-message" class="meta" role="status" aria-live="polite"></div>
+    </div>
+    <div id="gen-blocked" class="meta">Import, map and validate a workflow first.</div>
+
+    <h2 style="margin-top:18px">Jobs</h2>
+    <div id="jobs" class="stack scroll"><div class="meta">No generation jobs yet.</div></div>
+  </section>
+</main>
+<script>
+const el = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const state = { project: null, detail: null, comfy: null, roles: [], jobs: [], timer: null, images: [] };
+const ACTIVE = ['queued', 'submitted', 'running'];
+
+class ApiError extends Error { constructor(msg, status, body) { super(msg); this.status = status; this.body = body; } }
+async function api(path, options = {}) {
+  const response = await fetch(path, {headers: {'Content-Type': 'application/json', ...(options.headers || {})}, ...options});
+  const type = response.headers.get('content-type') || '';
+  const body = type.includes('json') ? await response.json().catch(() => null) : await response.text();
+  if (!response.ok) {
+    let detail = body && body.detail !== undefined ? body.detail : body;
+    if (Array.isArray(detail)) detail = detail.map(d => d.msg || JSON.stringify(d)).join('; ');
+    else if (detail && typeof detail === 'object') detail = detail.message || JSON.stringify(detail);
+    throw new ApiError(String(detail || `Request failed (${response.status})`), response.status, body);
+  }
+  return body;
+}
+function note(id, message, cls = '') { el(id).innerHTML = `<span class="${cls}">${esc(message)}</span>`; }
+
+// ------------------------------------------------------------------ ComfyUI status
+async function loadComfy() {
+  try {
+    state.comfy = await api('/api/comfyui/status');
+    state.roles = state.comfy.roles;
+    const config = state.comfy.config;
+    const banner = el('comfy-banner');
+    if (config.ok) {
+      const devices = (config.devices || []).map(d => `${esc(d.name)}${d.vram_total_gb ? ` (${d.vram_total_gb} GB)` : ''}`).join(', ');
+      banner.className = 'banner ok';
+      banner.innerHTML = `<b>ComfyUI connected</b> · ${esc(config.url)} · version ${esc(config.comfyui_version)}
+        · PyTorch ${esc(config.pytorch_version)}<div class="meta">${devices || 'no devices reported'} · job timeout ${state.comfy.job_timeout_seconds}s · no percent progress (this adapter polls the queue)</div>`;
+    } else {
+      banner.className = 'banner bad';
+      banner.innerHTML = `<b>ComfyUI not available.</b> ${esc(config.message || '')}
+        <div class="meta">Nothing can be generated until it is running on this computer. Everything else in the app still works.</div>`;
+    }
+  } catch (e) {
+    el('comfy-banner').className = 'banner bad';
+    el('comfy-banner').textContent = `Could not check ComfyUI: ${e.message}`;
+  }
+  updateGenerateAvailability();
+}
+
+// ------------------------------------------------------------------ projects & workflows
+async function loadProjects() {
+  try {
+    const list = await api('/api/projects');
+    el('project-picker').innerHTML = '<option value="">Choose a project…</option>' +
+      list.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join('');
+  } catch {}
+}
+el('project-picker').addEventListener('change', async (e) => {
+  state.project = e.target.value || null;
+  state.detail = null;
+  el('import').disabled = !state.project;
+  el('mapping-section').style.display = 'none';
+  if (state.project) { await Promise.all([loadWorkflows(), loadJobs(), loadReferenceImages(), loadTargets()]); }
+  updateGenerateAvailability();
+});
+
+el('wf-file').addEventListener('change', () => {
+  const file = el('wf-file').files[0];
+  if (file && !el('wf-name').value.trim()) el('wf-name').value = file.name.replace(/\.json$/i, '').slice(0, 120);
+});
+
+el('import').addEventListener('click', async () => {
+  const file = el('wf-file').files[0];
+  if (!file) return note('import-message', 'Choose an exported API workflow JSON file first.', 'bad');
+  el('import').disabled = true;
+  try {
+    const text = await file.text();
+    let parsed;
+    try { parsed = JSON.parse(text); } catch { throw new Error('That file is not valid JSON.'); }
+    const body = {name: el('wf-name').value.trim() || file.name, workflow: parsed, source_filename: file.name};
+    const detail = await api(`/api/projects/${state.project}/workflows`, {method: 'POST', body: JSON.stringify(body)});
+    note('import-message', `Imported "${detail.record.name}": ${detail.record.node_count} nodes. Now map its fields.`, 'ok');
+    await loadWorkflows();
+    selectWorkflow(detail);
+  } catch (e) { note('import-message', e.message, 'bad'); }
+  finally { el('import').disabled = false; }
+});
+
+async function loadWorkflows() {
+  const body = await api(`/api/projects/${state.project}/workflows`);
+  const list = el('workflow-list');
+  if (!body.workflows.length) { list.innerHTML = '<div class="meta">No workflows imported yet.</div>'; return; }
+  list.innerHTML = body.workflows.map(w => `<div class="card"><div class="row" style="align-items:center">
+    <div><b>${esc(w.name)}</b>
+      <span class="pill ${w.ready ? 'ok' : 'warn'}">${w.ready ? 'mapped' : 'needs mapping'}</span>
+      ${w.live_validation ? `<span class="pill ${w.live_validation.valid ? 'ok' : 'bad'}">live check ${w.live_validation.valid ? 'passed' : 'failed'}</span>` : ''}
+      <div class="meta">${w.node_count} nodes · sha256 ${esc(w.sha256.slice(0, 10))}… ${w.models.length ? '· models: ' + esc(w.models.map(m => m.name).join(', ')) : ''}</div></div>
+    <button class="secondary small auto" data-open="${esc(w.id)}">Open</button></div></div>`).join('');
+}
+el('workflow-list').addEventListener('click', async (e) => {
+  const id = e.target.closest('button')?.dataset.open;
+  if (id) { try { selectWorkflow(await api(`/api/projects/${state.project}/workflows/${id}`)); } catch (err) { note('import-message', err.message, 'bad'); } }
+});
+
+function selectWorkflow(detail) {
+  state.detail = detail;
+  el('mapping-section').style.display = 'block';
+  renderMapping();
+  renderValidation();
+  updateGenerateAvailability();
+}
+
+function renderMapping() {
+  const {inspection, record, suggestions} = state.detail;
+  const options = (role, selected) => {
+    let html = '<option value="">— not mapped —</option>';
+    for (const node of inspection.nodes) {
+      for (const field of node.fields) {
+        if (!field.roles.includes(role)) continue;
+        const value = `${node.id}|${field.input}`;
+        const preview = String(field.value ?? '').slice(0, 28);
+        html += `<option value="${esc(value)}" ${value === selected ? 'selected' : ''}>#${esc(node.id)} ${esc(node.title)} → ${esc(field.input)}${preview ? ` (${esc(preview)})` : ''}</option>`;
+      }
+    }
+    return html;
+  };
+  el('mapping-rows').innerHTML = state.roles.map(spec => {
+    const current = record.mapping[spec.role];
+    const selected = current ? `${current.node_id}|${current.input}` : '';
+    const hint = suggestions[spec.role] ? `suggested: #${suggestions[spec.role].node_id} → ${suggestions[spec.role].input}` : 'no suggestion';
+    return `<tr><td><label for="map-${spec.role}">${esc(spec.label)}${spec.required ? ' *' : ''}</label>
+      <div class="meta">${esc(hint)}</div></td>
+      <td><select id="map-${spec.role}" data-role="${esc(spec.role)}">${options(spec.role, selected)}</select></td></tr>`;
+  }).join('');
+  el('output-nodes').innerHTML = inspection.output_nodes.map(id =>
+    `<option value="${esc(id)}" ${record.mapping.output_nodes.includes(id) ? 'selected' : ''}>#${esc(id)} ${esc(inspection.nodes.find(n => n.id === id)?.class_type || '')}</option>`).join('')
+    || '<option disabled>this workflow has no Save/Preview node</option>';
+}
+
+function readMapping() {
+  const mapping = {output_nodes: [...el('output-nodes').selectedOptions].map(o => o.value)};
+  for (const spec of state.roles) {
+    const value = el(`map-${spec.role}`)?.value;
+    if (!value) { mapping[spec.role] = null; continue; }
+    const [node_id, input] = value.split('|');
+    mapping[spec.role] = {node_id, input};
+  }
+  return mapping;
+}
+
+el('use-suggestions').addEventListener('click', () => {
+  for (const [role, suggestion] of Object.entries(state.detail.suggestions)) {
+    const select = el(`map-${role}`);
+    if (select) select.value = `${suggestion.node_id}|${suggestion.input}`;
+  }
+  note('validation', 'Suggestions filled in. Check each row, then save the mapping.', 'warn');
+});
+
+el('save-mapping').addEventListener('click', async () => {
+  el('save-mapping').disabled = true;
+  try {
+    state.detail = await api(`/api/projects/${state.project}/workflows/${state.detail.record.id}/mapping`,
+      {method: 'PUT', body: JSON.stringify({mapping: readMapping()})});
+    renderMapping(); renderValidation(); await loadWorkflows(); updateGenerateAvailability();
+  } catch (e) { note('validation', e.message, 'bad'); }
+  finally { el('save-mapping').disabled = false; }
+});
+
+el('validate').addEventListener('click', async () => {
+  el('validate').disabled = true;
+  try {
+    state.detail = await api(`/api/projects/${state.project}/workflows/${state.detail.record.id}/validate`, {method: 'POST'});
+    renderMapping(); renderValidation(); await loadWorkflows(); updateGenerateAvailability();
+  } catch (e) {
+    renderValidation(e.body?.detail?.offline_validation);
+    el('validation').insertAdjacentHTML('afterbegin', `<div class="problem error">${esc(e.message)}</div>`);
+  } finally { el('validate').disabled = false; }
+});
+
+function renderValidation(offlineOverride) {
+  const record = state.detail?.record;
+  const blocks = [];
+  const show = (title, result) => {
+    if (!result) return;
+    const items = [...(result.errors || []).map(p => ({...p, kind: 'error'})),
+                   ...(result.warnings || []).map(p => ({...p, kind: 'warning'}))];
+    blocks.push(`<div class="card"><h3>${esc(title)}: <span class="${result.valid ? 'ok' : 'bad'}">${result.valid ? 'passed' : 'failed'}</span></h3>
+      ${items.map(p => `<div class="problem ${p.kind}">${esc(p.message)}</div>`).join('') || '<div class="meta">No problems.</div>'}</div>`);
+  };
+  show('Workflow check', offlineOverride || record?.offline_validation);
+  if (record?.live_validation) show(`ComfyUI check (version ${esc(record.live_validation.comfyui_version || '?')})`, record.live_validation);
+  else blocks.push('<div class="meta">Not checked against ComfyUI yet. The live check confirms node types, inputs and model files exist there.</div>');
+  el('validation').innerHTML = blocks.join('');
+}
+
+function updateGenerateAvailability() {
+  const ready = Boolean(state.detail?.record?.offline_validation?.valid) && Boolean(state.comfy?.config?.ok);
+  el('gen-form').style.display = ready ? 'block' : 'none';
+  el('gen-blocked').style.display = ready ? 'none' : 'block';
+  if (!state.project) el('gen-blocked').textContent = 'Choose a project first.';
+  else if (!state.comfy?.config?.ok) el('gen-blocked').textContent = 'ComfyUI is not available on this computer, so nothing can be generated yet.';
+  else if (!state.detail) el('gen-blocked').textContent = 'Open a workflow and map its fields.';
+  else if (!state.detail.record.offline_validation?.valid) el('gen-blocked').textContent = 'Fix the mapping problems above, then save the mapping.';
+  if (ready) {
+    const mapping = state.detail.record.mapping;
+    for (const [role, id] of [['negative_prompt', 'negative'], ['width', 'width'], ['height', 'height'], ['seed', 'seed'], ['reference_image', 'reference']]) {
+      const field = el(id);
+      const mapped = Boolean(mapping[role]);
+      field.disabled = !mapped;
+      field.title = mapped ? '' : `This workflow has no ${role.replace('_', ' ')} node mapped.`;
+      if (!mapped) field.value = '';
+    }
+    el('random-seed').disabled = !mapping.seed;
+    el('reference-hint').textContent = mapping.reference_image
+      ? 'Reference images come from this project: generated outputs, or files you put in references/input/.'
+      : 'This workflow has no reference image node mapped.';
+  }
+}
+
+// ------------------------------------------------------------------ generate
+async function loadReferenceImages() {
+  try {
+    const body = await api(`/api/projects/${state.project}/reference-images`);
+    state.images = body.images;
+    el('reference').innerHTML = '<option value="">none</option>' +
+      body.images.map(i => `<option value="${esc(i.path)}">${esc(i.path)} (${Math.round(i.bytes / 1024)} kB)</option>`).join('');
+  } catch {}
+}
+async function loadTargets() {
+  try {
+    const project = await api(`/api/projects/${state.project}`);
+    state.targets = {
+      character: project.characters.map(c => ({id: c.id, label: c.name})),
+      location: [...new Set(project.scenes.map(s => s.location))].map(l => ({id: l, label: l})),
+      shot: project.shots.map(s => ({id: s.id, label: `Shot ${s.scene_number}.${s.number} — ${s.shot_type}`})),
+      freeform: [],
+    };
+    renderTargets();
+  } catch {}
+}
+function renderTargets() {
+  const kind = el('target-type').value;
+  const options = (state.targets?.[kind] || []);
+  el('target-id').innerHTML = '<option value="">—</option>' +
+    options.map(o => `<option value="${esc(o.id)}">${esc(o.label)}</option>`).join('');
+  el('target-id').disabled = !options.length;
+}
+el('target-type').addEventListener('change', renderTargets);
+
+el('generate').addEventListener('click', async () => {
+  const prompt = el('prompt').value.trim();
+  if (!prompt) return note('gen-message', 'Write a prompt first.', 'bad');
+  const mapping = state.detail.record.mapping;
+  const body = {
+    workflow_id: state.detail.record.id, prompt,
+    target_type: el('target-type').value, target_id: el('target-id').value || null,
+    label: el('target-id').selectedOptions[0]?.textContent?.slice(0, 200) || '',
+  };
+  if (mapping.negative_prompt && el('negative').value.trim()) body.negative_prompt = el('negative').value.trim();
+  if (mapping.width && el('width').value) body.width = Number(el('width').value);
+  if (mapping.height && el('height').value) body.height = Number(el('height').value);
+  if (mapping.seed) {
+    body.randomize_seed = el('random-seed').checked;
+    if (!body.randomize_seed && el('seed').value !== '') body.seed = Number(el('seed').value);
+  }
+  if (mapping.reference_image && el('reference').value) body.reference_path = el('reference').value;
+  el('generate').disabled = true;
+  try {
+    const job = await api(`/api/projects/${state.project}/jobs`, {method: 'POST', body: JSON.stringify(body)});
+    note('gen-message', `Queued job ${job.id}${job.seed_used !== null ? ` with seed ${job.seed_used}` : ''}.`, 'ok');
+    await loadJobs();
+  } catch (e) { note('gen-message', e.message, 'bad'); }
+  finally { el('generate').disabled = false; }
+});
+el('refresh-jobs').addEventListener('click', () => { loadJobs(); loadComfy(); });
+
+// ------------------------------------------------------------------ jobs
+async function loadJobs() {
+  if (!state.project) return;
+  let body;
+  try { body = await api(`/api/projects/${state.project}/jobs`); } catch { return; }
+  state.jobs = body.jobs;
+  const container = el('jobs');
+  if (!body.jobs.length) { container.innerHTML = '<div class="meta">No generation jobs yet.</div>'; return; }
+  const cls = {succeeded: 'ok', failed: 'bad', cancelled: 'warn'};
+  container.innerHTML = body.jobs.map(job => `<div class="card">
+    <div class="row" style="align-items:flex-start">
+      <div><b>${esc(job.request.label || job.request.target_type)}</b>
+        <span class="state ${cls[job.status] || 'warn'}">${esc(job.status)}</span>
+        ${job.queue_position ? `<span class="pill">queue #${job.queue_position}</span>` : ''}
+        <div class="meta">${esc(job.workflow_name)} · seed ${job.seed_used ?? 'workflow default'}
+          ${job.duration_seconds !== null ? `· ${job.duration_seconds}s` : ''}
+          ${job.prompt_id ? `· prompt ${esc(String(job.prompt_id).slice(0, 8))}` : ''}</div></div>
+      ${ACTIVE.includes(job.status) ? `<button class="secondary small auto" data-cancel="${esc(job.id)}">Cancel</button>` : ''}
+      <button class="secondary small auto" data-retry="${esc(job.id)}">Retry</button>
+    </div>
+    <div class="meta" style="margin-top:6px">${esc(job.request.prompt.slice(0, 220))}</div>
+    ${job.error ? `<div class="problem error">${esc(job.error.message)}</div>` : ''}
+    ${job.outputs.length ? `<div class="shots" style="margin-top:8px">${job.outputs.map(o => `
+      <a href="/api/projects/${state.project}/jobs/${esc(job.id)}/outputs/${o.index}" target="_blank" rel="noopener">
+        <img src="/api/projects/${state.project}/jobs/${esc(job.id)}/outputs/${o.index}" alt="Generated image ${o.index + 1} for ${esc(job.request.label || job.request.prompt.slice(0, 60))}" loading="lazy" />
+        <span class="meta">${esc(o.filename)} · ${Math.round(o.bytes / 1024)} kB</span></a>`).join('')}</div>` : ''}
+    <details><summary>Details &amp; log</summary>
+      <div class="meta">Workflow sha256 ${esc(job.workflow_sha256.slice(0, 16))}… · ComfyUI ${esc(job.comfyui_version || '?')} at ${esc(job.comfyui_url || '?')}
+      ${job.models.length ? `<br>models: ${esc(job.models.map(m => m.name).join(', '))}` : ''}
+      ${job.metadata_path ? `<br>metadata: <code>${esc(job.metadata_path)}</code>` : ''}
+      ${job.reference_uploaded_as ? `<br>reference uploaded as <code>${esc(job.reference_uploaded_as)}</code>` : ''}</div>
+      <pre class="log">${esc(job.log.join('\n'))}</pre></details></div>`).join('');
+  const active = body.active > 0;
+  clearTimeout(state.timer);
+  if (active) state.timer = setTimeout(loadJobs, 1500);
+}
+
+el('jobs').addEventListener('click', async (e) => {
+  const button = e.target.closest('button');
+  if (!button) return;
+  try {
+    if (button.dataset.cancel) {
+      await api(`/api/projects/${state.project}/jobs/${button.dataset.cancel}/cancel`, {method: 'POST'});
+    } else if (button.dataset.retry) {
+      const randomize = confirm('Use a new random seed?\n\nOK = new seed, Cancel = same seed.');
+      await api(`/api/projects/${state.project}/jobs/${button.dataset.retry}/retry`,
+        {method: 'POST', body: JSON.stringify({randomize_seed: randomize})});
+    }
+    await loadJobs();
+  } catch (err) { note('gen-message', err.message, 'bad'); }
+});
+
+loadComfy();
+loadProjects();
+</script>
+</body>
+</html>

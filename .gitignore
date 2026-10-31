@@ -1,0 +1,42 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Local configuration (never commit real service URLs or secrets)
+.env
+
+# Project data: screenplays, reference images, generated media and snapshots stay local
+workspace/projects/*
+!workspace/projects/.gitkeep
+
+# Models and generation backends are installed separately, never vendored
+models/
+ComfyUI/
+outputs/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.gguf
+
+# Media
+*.mp4
+*.mov
+*.wav
+*.mp3
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Temporary files written during atomic saves
+*.tmp
+.*.tmp
